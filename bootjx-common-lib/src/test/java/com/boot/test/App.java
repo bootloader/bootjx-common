@@ -21,7 +21,7 @@ import com.boot.utils.ArgUtil;
 import com.boot.utils.ContextUtil;
 import com.boot.utils.JsonUtil;
 import com.boot.utils.TimeUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 
 public class App { // Noncompliant
 

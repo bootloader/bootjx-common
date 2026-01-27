@@ -39,7 +39,7 @@ import com.boot.utils.ArgUtil;
 import com.boot.utils.CryptoUtil.HashBuilder;
 import com.boot.utils.HttpUtils;
 import com.boot.utils.JsonUtil;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;

@@ -19,8 +19,8 @@ import com.boot.utils.JsonUtil;
 import com.boot.utils.TimeUtils;
 import com.boot.utils.TimeUtils.TimePeriod;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(using = MapModelDeserializer.class)

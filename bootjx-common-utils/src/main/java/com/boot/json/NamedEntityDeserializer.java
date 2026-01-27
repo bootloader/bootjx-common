@@ -4,7 +4,7 @@ import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.util.Map;
 
-import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.boot.jackson.JacksonComponent;
 
 import com.boot.json.NamedEntityDeserializer.NamedMapModel;
 import com.boot.model.MapModel;
@@ -12,16 +12,16 @@ import com.boot.utils.ArgUtil;
 import com.boot.utils.JsonUtil;
 import com.boot.utils.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonProcessingException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
-@JsonComponent
+@JacksonComponent
 public class NamedEntityDeserializer extends StdDeserializer<NamedMapModel> {
 
     private static final long serialVersionUID = 1L;

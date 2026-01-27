@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import com.boot.utils.ArgExceptions.ParameterException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.JsonSerializer;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 //TODO: Auto-generated Javadoc
 /**

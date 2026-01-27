@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 import com.boot.utils.ArgUtil;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 @JsonDeserialize(as = GridFieldDescriptorDTO.class)
 public interface GridFieldDescriptor extends Serializable {

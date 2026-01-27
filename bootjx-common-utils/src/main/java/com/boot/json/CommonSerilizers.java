@@ -4,24 +4,24 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.boot.jackson.JacksonComponent;
 
 import com.boot.model.MapModel;
 import com.boot.utils.ArgUtil;
 import com.boot.utils.ArgUtil.EnumById;
 import com.boot.utils.EnumType;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonProcessingException;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonDeserializer;
+import tools.jackson.databind.JsonSerializer;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.deser.std.NumberDeserializers;
+import tools.jackson.databind.jsontype.TypeSerializer;
 
 public class CommonSerilizers {
-    @JsonComponent
+    @JacksonComponent
     public static class EnumByIdSerializer extends JsonSerializer<EnumById> {
 
 	@Override
@@ -31,7 +31,7 @@ public class CommonSerilizers {
 	}
     }
 
-    @JsonComponent
+    @JacksonComponent
     public static class EnumTypeSerializer extends JsonSerializer<EnumType> {
 
 	@Override
@@ -46,7 +46,7 @@ public class CommonSerilizers {
 	}
     }
 
-    @JsonComponent
+    @JacksonComponent
     public static class BigDecimalSerializer extends JsonSerializer<BigDecimal> {
 
 	@Override
@@ -70,7 +70,7 @@ public class CommonSerilizers {
 	}
     }
 
-    @JsonComponent
+    @JacksonComponent
     public static class MapModelDeSerializer extends JsonDeserializer<MapModel> {
 
 	@Override

@@ -12,7 +12,7 @@ import java.util.Set;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * The Class MapBuilder.

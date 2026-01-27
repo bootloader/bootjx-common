@@ -24,7 +24,7 @@ import com.boot.utils.Constants;
 import com.boot.utils.ContextUtil;
 import com.boot.utils.JsonUtil;
 import com.boot.utils.UniqueID;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 
 import jakarta.servlet.http.HttpServletRequest;
 

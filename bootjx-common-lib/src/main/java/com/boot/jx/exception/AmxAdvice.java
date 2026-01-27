@@ -55,8 +55,8 @@ import com.boot.jx.logger.events.ApiAuditEvent;
 import com.boot.model.MapModel;
 import com.boot.utils.ArgUtil;
 import com.boot.utils.HttpUtils;
-import com.fasterxml.jackson.databind.JsonMappingException.Reference;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.JsonMappingException.Reference;
+import tools.jackson.databind.exc.InvalidFormatException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

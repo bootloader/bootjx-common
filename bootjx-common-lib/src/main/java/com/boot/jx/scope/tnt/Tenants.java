@@ -8,17 +8,17 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.boot.jackson.JacksonComponent;
 
 import com.boot.utils.ArgUtil;
 import com.boot.utils.Constants;
 import com.boot.utils.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonProcessingException;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 public class Tenants {
 
@@ -169,7 +169,7 @@ public class Tenants {
 		return list;
 	}
 
-	@JsonComponent
+	@JacksonComponent
 	public class TenantDeSerializer extends JsonDeserializer<Tenant> {
 
 		@Override
