@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import com.boot.jx.AppConfig;
 import com.boot.jx.AppConfigPackage.AppSharedConfig;
-import com.boot.jx.AppConfigPackage.AppSharedConfigChange;
 
 @Component
 public class AppSharedConfigImpl implements AppSharedConfig {
