@@ -7,15 +7,17 @@ import org.springframework.stereotype.Component;
 
 import com.boot.jx.AppConfig;
 import com.boot.jx.AppConfigPackage.AppSharedConfig;
+import com.boot.jx.AppConfigPackage.AppSharedConfigChange;
 
 @Component
 public class AppSharedConfigImpl implements AppSharedConfig {
 
-    @Autowired
-    private AppConfig appConfig;
+	@Autowired
+	private AppConfig appConfig;
 
-    @Override
-    public Map<String, Object> getExternalConfig(Map<String, Object> config) {
-	return config;
-    };
+	@Override
+	public Map<String, Object> getExternalConfig(Map<String, Object> config) {
+		return config;
+	};
+
 }

@@ -8,14 +8,26 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.stereotype.Component;
 
 import com.boot.utils.ArgUtil;
 import com.boot.utils.ClazzUtil;
 
 @Component
-public class AppConfigPackage {
-	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+public class AppConfigPackage implements ApplicationEventPublisherAware {
+	private static final Logger LOGGER = LoggerFactory.getLogger(AppConfigPackage.class);
+
+	private static ApplicationEventPublisher APPLICATION_EVENT_PUBLISHER;
+
+	public interface SharedConfigManager {
+
+		void clear(AppSharedConfigChange change);
+
+		void clear();
+
+	}
 
 	public interface AppCommonConfig {
 
@@ -26,8 +38,10 @@ public class AppConfigPackage {
 	}
 
 	public interface AppSharedConfig {
+
 		default void clear(AppSharedConfigChange change) {
 			// DO NOTHING
+			LOGGER.info("cleared AppSharedConfig for: {}", name());
 		};
 
 		@Deprecated
@@ -36,11 +50,15 @@ public class AppConfigPackage {
 		};
 
 		default String name() {
-			return null;
+			return getClass().getName();
 		};
 
 		default Map<String, Object> getExternalConfig(Map<String, Object> config) {
 			return config;
+		}
+
+		default void publishUpdate() {
+			APPLICATION_EVENT_PUBLISHER.publishEvent(SharedConfigChangeBuilder.newChange().type(name()).build());
 		}
 	}
 
@@ -87,13 +105,38 @@ public class AppConfigPackage {
 		}
 	}
 
+	public static class SharedConfigChangeBuilder {
+		AppSharedConfigChange change;
+
+		public static SharedConfigChangeBuilder newChange() {
+			SharedConfigChangeBuilder builder = new SharedConfigChangeBuilder();
+			builder.change = new AppSharedConfigChange();
+			return builder;
+		}
+
+		public SharedConfigChangeBuilder type(String type) {
+			this.change.setConfigType(type);
+			return this;
+		}
+
+		public AppSharedConfigChange build() {
+			return this.change;
+		}
+	}
+
 	@Autowired(required = false)
 	private List<AppSharedConfig> listAppSharedConfig;
 
 	public void clear(AppSharedConfigChange change) {
 		if (ArgUtil.is(listAppSharedConfig)) {
 			for (AppSharedConfig appSharedConfig : listAppSharedConfig) {
-				appSharedConfig.clear(change);
+				if (ArgUtil.is(change) && ArgUtil.is(change.getConfigType())) {
+					if (ArgUtil.is(change.getConfigType(), appSharedConfig.name())) {
+						appSharedConfig.clear(change);
+					}
+				} else {
+					appSharedConfig.clear(change);
+				}
 				LOGGER.debug("for class {}", ClazzUtil.getUltimateClassName(appSharedConfig));
 			}
 		}
@@ -123,6 +166,11 @@ public class AppConfigPackage {
 			}
 		}
 		return config;
+	}
+
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		APPLICATION_EVENT_PUBLISHER = applicationEventPublisher;
 	}
 
 }
