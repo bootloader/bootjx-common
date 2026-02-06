@@ -58,15 +58,29 @@ public class AppConfigPackage implements ApplicationEventPublisherAware {
 		}
 
 		default void publishUpdate() {
-			APPLICATION_EVENT_PUBLISHER.publishEvent(SharedConfigChangeBuilder.newChange().type(name()).build());
+			APPLICATION_EVENT_PUBLISHER.publishEvent(SharedConfigChangeBuilder.newChange().name(name()).build());
+		}
+
+		default void publishUpdate(AppSharedConfigChange change) {
+			change.setName(name());
+			APPLICATION_EVENT_PUBLISHER.publishEvent(change);
 		}
 	}
 
 	public static class AppSharedConfigChange implements Serializable {
 		private static final long serialVersionUID = 6496200861213027301L;
+		String name;
 		String configType;
 		String configId;
 		Map<String, String> details;
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
 
 		public String getConfigType() {
 			return configType;
@@ -114,6 +128,11 @@ public class AppConfigPackage implements ApplicationEventPublisherAware {
 			return builder;
 		}
 
+		public SharedConfigChangeBuilder name(String name) {
+			this.change.setName(name);
+			return this;
+		}
+
 		public SharedConfigChangeBuilder type(String type) {
 			this.change.setConfigType(type);
 			return this;
@@ -130,8 +149,8 @@ public class AppConfigPackage implements ApplicationEventPublisherAware {
 	public void clear(AppSharedConfigChange change) {
 		if (ArgUtil.is(listAppSharedConfig)) {
 			for (AppSharedConfig appSharedConfig : listAppSharedConfig) {
-				if (ArgUtil.is(change) && ArgUtil.is(change.getConfigType())) {
-					if (ArgUtil.is(change.getConfigType(), appSharedConfig.name())) {
+				if (ArgUtil.is(change) && ArgUtil.is(change.getName())) {
+					if (ArgUtil.is(change.getName(), appSharedConfig.name())) {
 						appSharedConfig.clear(change);
 					}
 				} else {
