@@ -330,6 +330,17 @@ public final class CryptoUtil {
 	/**
 	 * Gets the SH a2 hash.
 	 *
+	 * @param str the str
+	 * @return sha2 hashed string
+	 * @throws NoSuchAlgorithmException the no such algorithm exception
+	 */
+	public static String getSHA2HashUnchecked(String str) throws NoSuchAlgorithmException {
+		return getSHA2Hash(str.getBytes());
+	}
+
+	/**
+	 * Gets the SH a2 hash.
+	 *
 	 * @param byteArray the byte array
 	 * @return sha2 hashed string
 	 * @throws NoSuchAlgorithmException the no such algorithm exception
