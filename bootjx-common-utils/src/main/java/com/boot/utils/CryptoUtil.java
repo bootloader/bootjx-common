@@ -334,8 +334,13 @@ public final class CryptoUtil {
 	 * @return sha2 hashed string
 	 * @throws NoSuchAlgorithmException the no such algorithm exception
 	 */
-	public static String getSHA2HashUnchecked(String str) throws NoSuchAlgorithmException {
-		return getSHA2Hash(str.getBytes());
+	public static String getSHA2HashUnchecked(String str) {
+		try {
+			return getSHA2Hash(str.getBytes());
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return str;
+		}
 	}
 
 	/**
