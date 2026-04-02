@@ -8,7 +8,7 @@ import com.boot.utils.EntityDtoUtil;
 public class RequestMetaInfo<T extends RequestMetaInfo<T>> extends ARequestMetaInfo {
 
 	private static final long serialVersionUID = 3249496088642457400L;
-
+	
 	public static class CommonRequestMetaInfo extends RequestMetaInfo<CommonRequestMetaInfo> {
 		private static final long serialVersionUID = -2579877382913638573L;
 		public Map<String, Object> map;
