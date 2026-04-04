@@ -32,6 +32,10 @@ public class RestObjectAbstract<RQT, RSP, T extends RestObjectAbstract<RQT, RSP,
 			this.body = body;
 		}
 
+		public RestObjectRequest() {
+			super();
+		}
+
 		private String status;
 
 		public String getStatus() {
