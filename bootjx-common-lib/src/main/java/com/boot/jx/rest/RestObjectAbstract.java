@@ -1,6 +1,8 @@
 package com.boot.jx.rest;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.boot.model.MapModel;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -13,8 +15,8 @@ public class RestObjectAbstract<RQT, RSP, T extends RestObjectAbstract<RQT, RSP,
 	public static class RestMapModel extends RestObjectAbstract<MapModel, MapModel, RestMapModel> {
 		private static final long serialVersionUID = 1L;
 	}
-	
-	public static class RestObject<RQT,RSP> extends RestObjectAbstract<RQT,RSP, RestObject<RQT,RSP>> {
+
+	public static class RestObject<RQT, RSP> extends RestObjectAbstract<RQT, RSP, RestObject<RQT, RSP>> {
 		private static final long serialVersionUID = 1L;
 	}
 
@@ -49,10 +51,28 @@ public class RestObjectAbstract<RQT, RSP, T extends RestObjectAbstract<RQT, RSP,
 		public void setBody(R body) {
 			this.body = body;
 		}
+
 	}
 
 	private RestObjectRequest<RQT> request;
 	private RestObjectRequest<RSP> response;
+
+	private Map<String, Object> meta;
+
+	public Map<String, Object> getMeta() {
+		return meta;
+	}
+
+	public void setMeta(Map<String, Object> meta) {
+		this.meta = meta;
+	}
+
+	public Map<String, Object> meta() {
+		if (this.meta == null) {
+			this.meta = new HashMap<String, Object>();
+		}
+		return this.meta;
+	}
 
 	public RestObjectAbstract() {
 		super();
