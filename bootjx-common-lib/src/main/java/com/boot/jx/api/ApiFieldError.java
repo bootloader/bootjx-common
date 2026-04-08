@@ -26,6 +26,16 @@ public class ApiFieldError implements Serializable {
 	String code = null;
 	String codeKey = null;
 	Object body;
+	String traceId = null;
+	
+	public String getTraceId() {
+		return traceId;
+	}
+
+	public void setTraceId(String traceId) {
+		this.traceId = traceId;
+	}
+
 	// Enum Codes
 	// IExceptionEnum enumCode;
 	/**
