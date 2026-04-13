@@ -121,7 +121,7 @@ public class MapModel implements JsonSerializerType<Object> {
 		 * @param defaultvalue
 		 * @return
 		 */
-		public Boolean asBoolean(boolean defaultvalue) {
+		public Boolean asBoolean(Boolean defaultvalue) {
 			return ArgUtil.parseAsBoolean(value, defaultvalue);
 		}
 
