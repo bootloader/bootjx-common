@@ -3,8 +3,11 @@ package com.boot.jx.def;
 import java.util.Objects;
 
 import com.boot.jx.AppContextUtil;
+import com.boot.utils.StringUtils;
 
 public final class TenantAwareKey {
+	private static final String KEY_DELIMITER = ":::";
+	private static final String CODE_DELIMITER = "#";
 	private final String tenant;
 	private final String code;
 
@@ -21,8 +24,12 @@ public final class TenantAwareKey {
 		return code;
 	}
 
+	public String[] codes() {
+		return StringUtils.split(code, CODE_DELIMITER);
+	}
+
 	public String toString() {
-		return tenant + "::" + code;
+		return tenant + KEY_DELIMITER + code;
 	}
 
 	@Override
@@ -41,6 +48,11 @@ public final class TenantAwareKey {
 	}
 
 	public static TenantAwareKey fromCode(String code) {
+		return new TenantAwareKey(AppContextUtil.getTenant(), code);
+	}
+
+	public static TenantAwareKey fromCode(String... codes) {
+		String code = StringUtils.join(CODE_DELIMITER, codes);
 		return new TenantAwareKey(AppContextUtil.getTenant(), code);
 	}
 
