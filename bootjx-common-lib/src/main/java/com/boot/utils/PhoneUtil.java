@@ -8,6 +8,36 @@ public class PhoneUtil {
 
 	public static final PhoneNumberUtil PHONE_NUMBER_UTIL = PhoneNumberUtil.getInstance();
 
+	public static class PhoneNumberWrapper {
+		PhoneNumber phoneNumber;
+		boolean dummy;
+
+		public PhoneNumber getPhoneNumber() {
+			return phoneNumber;
+		}
+
+		public void setPhoneNumber(PhoneNumber phoneNumber) {
+			this.phoneNumber = phoneNumber;
+		}
+
+		public boolean isDummy() {
+			return dummy;
+		}
+
+		public void setDummy(boolean dummy) {
+			this.dummy = dummy;
+		}
+
+	}
+
+	public PhoneNumberWrapper parse(CharSequence numberToParse, String defaultRegion) throws NumberParseException {
+		PhoneNumberWrapper phoneNumberWrap = new PhoneNumberWrapper();
+		PhoneNumber phoneNumber = PHONE_NUMBER_UTIL.parse(numberToParse, defaultRegion);
+		phoneNumberWrap.setPhoneNumber(phoneNumber);
+		return phoneNumberWrap;
+	}
+
+	
 	public static String phone(String phoneNo) {
 		if (ArgUtil.is(phoneNo)) {
 			String phone = phoneNo.replace(" ", "").replaceAll("^[\\+0\\s]+(?!$)", "").trim();
@@ -33,4 +63,6 @@ public class PhoneUtil {
 		}
 		return phoneNo;
 	}
+
+
 }
