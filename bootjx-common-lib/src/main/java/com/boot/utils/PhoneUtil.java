@@ -8,6 +8,8 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 public class PhoneUtil {
 
+	private static final String DEFAULT_REGION_IN = "IN";
+
 	public static final PhoneNumberUtil PHONE_NUMBER_UTIL = PhoneNumberUtil.getInstance();
 
 	private static final List<String> MOCK_PREFIXES = List.of("+1555", "15550", "9990", "+9990");
@@ -102,7 +104,7 @@ public class PhoneUtil {
 		return number != null && MOCK_PREFIXES.stream().anyMatch(number::startsWith);
 	}
 
-	public static PhoneNumberResult parse(String numberToParse, String defaultRegion) throws NumberParseException {
+	public static PhoneNumberResult parse(String numberToParse, String defaultRegion) {
 
 		if (!ArgUtil.is(numberToParse)) {
 			return new PhoneNumberResult(null, null, false);
@@ -125,11 +127,15 @@ public class PhoneUtil {
 		return phoneNumberWrap;
 	}
 
+	public static PhoneNumberResult parse(String numberToParse) {
+		return parse(numberToParse, DEFAULT_REGION_IN);
+	}
+
 	public static String phone(String phoneNo) {
 		if (ArgUtil.is(phoneNo)) {
 			String phone = phoneNo.replace(" ", "").replaceAll("^[\\+0\\s]+(?!$)", "").trim();
 			try {
-				PhoneNumber phoneNumber = PHONE_NUMBER_UTIL.parse("+" + phone, "IN");
+				PhoneNumber phoneNumber = PHONE_NUMBER_UTIL.parse("+" + phone, DEFAULT_REGION_IN);
 				phone = String.format("%s%s", phoneNumber.getCountryCode(), phoneNumber.getNationalNumber());
 			} catch (NumberParseException e) {
 				// phone = String.format("%s", phone);
