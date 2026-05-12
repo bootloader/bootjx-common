@@ -12,7 +12,7 @@ public class PhoneUtil {
 
 	public static final PhoneNumberUtil PHONE_NUMBER_UTIL = PhoneNumberUtil.getInstance();
 
-	private static final List<String> MOCK_PREFIXES = List.of("+1555", "15550", "9990", "+9990");
+	private static final List<String> MOCK_PREFIXES = List.of("+1555", "1555", "9990", "+9990");
 	public static final String PLUS_SIGN = "+";
 
 	public static class PhoneNumberResult {
@@ -113,7 +113,18 @@ public class PhoneUtil {
 
 		// mock detection
 		if (isMockNumber(normalized)) {
-			return new PhoneNumberResult(normalized, null, true);
+
+			PhoneNumber dummyPhone = new PhoneNumber();
+			if (normalized.startsWith("1555")) {
+				dummyPhone.setCountryCode(1);
+				dummyPhone.setNationalNumber(Long.parseLong(normalized.substring(1)));
+			} else {
+				dummyPhone.setCountryCode(99);
+				dummyPhone.setNationalNumber(Long.parseLong(normalized.substring(3)));
+			}
+			PhoneNumberResult wrapper = new PhoneNumberResult(normalized, dummyPhone, true);
+			return wrapper;
+
 		}
 
 		PhoneNumberResult phoneNumberWrap = new PhoneNumberResult(normalized, null, false);
