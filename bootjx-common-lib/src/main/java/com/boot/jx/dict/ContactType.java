@@ -36,9 +36,10 @@ public enum ContactType {
 		}
 	},
 
-	WEBSITE("web"), TWITTER("tw", "Twitter"),
-	INSTAGRAM("ig","Instagram"),
-	
+	WEBSITE("web"), TWITTER("tw", "Twitter"), INSTAGRAM("ig", "Instagram"),
+
+	APPLICATION("app"),
+
 	// Default Null Value
 	DUMMY("dummy"), EMPTY("");
 
