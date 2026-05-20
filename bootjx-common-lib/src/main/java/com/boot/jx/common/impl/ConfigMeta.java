@@ -238,6 +238,14 @@ public class ConfigMeta implements Serializable {
 		return this;
 	}
 
+	public ConfigMeta options(String... options) {
+		this.options = this.options();
+		for (String configOptionStr : options) {
+			this.options.add(new ConfigOption(configOptionStr));
+		}
+		return this;
+	}
+
 	public ConfigMeta optionValues(Object... optionValues) {
 		this.options = this.options();
 		for (Object optionValue : optionValues) {
