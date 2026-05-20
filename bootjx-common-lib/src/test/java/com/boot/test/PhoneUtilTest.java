@@ -1,6 +1,5 @@
 package com.boot.test;
 
-import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -9,11 +8,12 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.boot.utils.JsonUtil;
 import com.boot.utils.PhoneUtil;
 import com.boot.utils.PhoneUtil.PhoneNumberResult;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.i18n.phonenumbers.NumberParseException;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 
 public class PhoneUtilTest { // Noncompliant
 
@@ -21,8 +21,13 @@ public class PhoneUtilTest { // Noncompliant
 
 	private static Logger LOGGER = LoggerFactory.getLogger(PhoneUtilTest.class);
 
-	private static final List<String> MOCK_NUMBERS = List.of("+155500000001", "155500000001", "+999000000001",
-			"999000000001", "+9990 00000001");
+	private static final List<String> MOCK_NUMBERS = List.of(
+			//
+			"+155500000001", "155500000001",
+			//
+			"+91 10000 00001", "91 10000 00001",
+			//
+			"+99 90100 00001", "99 90100 00001", "+99 90100 00001");
 
 	/**
 	 * This is just a test method
@@ -36,8 +41,11 @@ public class PhoneUtilTest { // Noncompliant
 
 		for (String string : MOCK_NUMBERS) {
 			PhoneNumberResult reslt = PhoneUtil.parse(string, null);
-			LOGGER.info("{} = {} = Mock({}) : Valid({})", string, reslt.getNumber(), reslt.isMock(),
-					reslt.isValid());
+
+			LOGGER.info("{} = {} -> Mock({}) : Valid({}) ISD({}) LOCAL({})", string, reslt.getNumber(), reslt.isMock(),
+					reslt.isValid(), reslt.getPhone().getCountryCode(), reslt.getPhone().getNationalNumber()
+
+			);
 		}
 
 	}

@@ -12,8 +12,13 @@ public class PhoneUtil {
 
 	public static final PhoneNumberUtil PHONE_NUMBER_UTIL = PhoneNumberUtil.getInstance();
 
-	private static final List<String> MOCK_PREFIXES = List.of("+1555", "1555", "9990", "+9990");
+	private static final List<String> MOCK_PREFIXES = List.of("+1555", "1555", "9990", "+9990", "9110", "+9110");
 	public static final String PLUS_SIGN = "+";
+
+	static {
+		String loggerName = "com.google.i18n.phonenumbers";
+		java.util.logging.Logger.getLogger(loggerName).setLevel(java.util.logging.Level.WARNING);
+	}
 
 	public static class PhoneNumberResult {
 		PhoneNumber phone;
@@ -72,25 +77,30 @@ public class PhoneUtil {
 	}
 
 	private static String toDigitsWithCountryCode(String input) {
-		if (!ArgUtil.is(input))
+		if (!ArgUtil.is(input)) {
 			return input;
+		}
 
-		StringBuilder digits = new StringBuilder(input.length());
+		char[] buffer = new char[input.length()];
+		int count = 0;
 
-		// keep only digits
+		// extract digits
 		for (int i = 0; i < input.length(); i++) {
 			char c = input.charAt(i);
+
 			if (c >= '0' && c <= '9') {
-				digits.append(c);
+				buffer[count++] = c;
 			}
 		}
 
-		// remove all leading zeros (safe under your contract)
-		while (digits.length() > 0 && digits.charAt(0) == '0') {
-			digits.deleteCharAt(0);
+		// skip leading zeros
+		int start = 0;
+		while (start < count && buffer[start] == '0') {
+			start++;
 		}
 
-		return digits.toString();
+		// return new String(buffer, start, count - start);
+		return start == count ? "" : new String(buffer, start, count - start);
 	}
 
 	public static String toE164(String input) {
@@ -112,15 +122,18 @@ public class PhoneUtil {
 		String normalized = toDigitsWithCountryCode(numberToParse);
 
 		// mock detection
-		if (isMockNumber(normalized)) {
+		if (isMockNumber(normalized) && normalized.length() == 12) {
 
 			PhoneNumber dummyPhone = new PhoneNumber();
 			if (normalized.startsWith("1555")) {
 				dummyPhone.setCountryCode(1);
 				dummyPhone.setNationalNumber(Long.parseLong(normalized.substring(1)));
+			} else if (normalized.startsWith("9110")) {
+				dummyPhone.setCountryCode(91);
+				dummyPhone.setNationalNumber(Long.parseLong(normalized.substring(2)));
 			} else {
 				dummyPhone.setCountryCode(99);
-				dummyPhone.setNationalNumber(Long.parseLong(normalized.substring(3)));
+				dummyPhone.setNationalNumber(Long.parseLong(normalized.substring(2)));
 			}
 			PhoneNumberResult wrapper = new PhoneNumberResult(normalized, dummyPhone, true);
 			return wrapper;
