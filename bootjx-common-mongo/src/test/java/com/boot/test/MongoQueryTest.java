@@ -23,6 +23,13 @@ import com.boot.utils.JsonUtil;
 public class MongoQueryTest { // Noncompliant
 
 	public static void main(String[] args) throws ParseException, IOException {
+		QA list = new QA().add(Aggregation.match(Criteria.where("bulkSessionId").is("XXXXXX")),
+				Aggregation.group("status").count().as("count"));
+		System.out.println(JsonUtil.toJson(list.piplines()));
+
+	}
+
+	public static void main6(String[] args) throws ParseException, IOException {
 		CommonMongoStore.getPages(
 				new ModelQueryParams(MapModel.createInstance().put("age", ">4, 5<").put("yr<", "8")
 						.put("status", "(CLOSED|OPEN)").put("tag", "(URGEN|P1)")),
