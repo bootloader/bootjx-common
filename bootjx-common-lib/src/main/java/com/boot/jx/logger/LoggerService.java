@@ -24,8 +24,8 @@ public class LoggerService {
 
 	public static class LogTimer {
 
-		private long lastTime;
-		private final List<LogEntry> logs = new ArrayList<>();
+		protected long lastTime;
+		protected final List<LogEntry> logs = new ArrayList<>();
 
 		public LogTimer() {
 			this.lastTime = System.currentTimeMillis();
@@ -38,12 +38,19 @@ public class LoggerService {
 			logs.add(new LogEntry(label, diff));
 			lastTime = now;
 		}
+	}
+
+	public static class LogTimerPrintable extends LogTimer {
+
+		public LogTimerPrintable() {
+			super();
+		}
 
 		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 
-			for (LogEntry entry : logs) {
+			for (LogEntry entry : this.logs) {
 				sb.append(entry.label).append(" : ").append(entry.duration).append(" ms\n");
 			}
 
@@ -52,7 +59,7 @@ public class LoggerService {
 	}
 
 	public static LogTimer getTimer() {
-		return new LogTimer();
+		return new LogTimerPrintable();
 	}
 
 }
