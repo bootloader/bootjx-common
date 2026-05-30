@@ -143,6 +143,15 @@ public class AppContextUtil {
 		return (Language) ArgUtil.parseAsEnum(ContextUtil.map().get(AppConstants.LANG_PARAM_KEY), lang, Language.class);
 	}
 
+	public static boolean batchTask(boolean isBatchTask) {
+		ContextUtil.map().put("isBatchTask", isBatchTask);
+		return isBatchTask;
+	}
+
+	public static boolean batchTask() {
+		return ArgUtil.parseAsBoolean(ContextUtil.map().get("isBatchTask"));
+	}
+
 	public static UserDeviceClient getUserClient() {
 		Object userDeviceClientObject = ContextUtil.map().get(AppConstants.USER_CLIENT_XKEY);
 		UserDeviceClient userDeviceClient = null;
