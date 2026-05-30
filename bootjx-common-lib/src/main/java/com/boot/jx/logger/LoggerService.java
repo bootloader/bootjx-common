@@ -1,5 +1,6 @@
 package com.boot.jx.logger;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,9 @@ public class LoggerService {
 		return LoggerFactory.getLogger(clazz);
 	}
 
-	private static class LogEntry {
+	public static class LogEntry implements Serializable {
+
+		private static final long serialVersionUID = 285769445887570214L;
 		String label;
 		long duration;
 
@@ -20,12 +23,29 @@ public class LoggerService {
 			this.label = label;
 			this.duration = duration;
 		}
+
+		public String getLabel() {
+			return label;
+		}
+
+		public void setLabel(String label) {
+			this.label = label;
+		}
+
+		public long getDuration() {
+			return duration;
+		}
+
+		public void setDuration(long duration) {
+			this.duration = duration;
+		}
 	}
 
-	public static class LogTimer {
+	public static class LogTimer implements Serializable {
 
+		private static final long serialVersionUID = 1L;
 		protected long lastTime;
-		protected final List<LogEntry> logs = new ArrayList<>();
+		protected List<LogEntry> logs = new ArrayList<>();
 
 		public LogTimer() {
 			this.lastTime = System.currentTimeMillis();
@@ -38,9 +58,27 @@ public class LoggerService {
 			logs.add(new LogEntry(label, diff));
 			lastTime = now;
 		}
+
+		public long getLastTime() {
+			return lastTime;
+		}
+
+		public void setLastTime(long lastTime) {
+			this.lastTime = lastTime;
+		}
+
+		public List<LogEntry> getLogs() {
+			return logs;
+		}
+
+		public void setLogs(List<LogEntry> logs) {
+			this.logs = logs;
+		}
 	}
 
 	public static class LogTimerPrintable extends LogTimer {
+
+		private static final long serialVersionUID = -8990178452772943749L;
 
 		public LogTimerPrintable() {
 			super();
