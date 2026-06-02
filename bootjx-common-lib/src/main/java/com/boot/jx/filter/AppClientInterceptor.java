@@ -46,12 +46,25 @@ public class AppClientInterceptor implements ClientHttpRequestInterceptor {
 		long startTime = System.currentTimeMillis();
 		ClientHttpResponse response = execution.execute(request, body);
 		AppContextUtil.importAppContextFromResponseHEader(response.getHeaders());
-		RequestTrackEvent e = new RequestTrackEvent(RequestTrackEvent.Type.HTTP_OUT)
-				.responseTime(System.currentTimeMillis() - startTime)
-				.outbound(response, request);
-		AuditServiceClient.trackStatic(e);
-
+		if (shouldTrackRequest(request)) {
+			RequestTrackEvent e = new RequestTrackEvent(RequestTrackEvent.Type.HTTP_OUT)
+					.responseTime(System.currentTimeMillis() - startTime).outbound(response, request);
+			AuditServiceClient.trackStatic(e);
+		}
 		return AppRequestUtil.printIfDebug(response);
+	}
+
+	private boolean shouldTrackRequest(HttpRequest request) {
+		// Priority 1: Check header (most flexible - can be set per request)
+		String trackHeader = request.getHeaders().getFirst("X-Track-Request");
+		if ("false".equalsIgnoreCase(trackHeader)) {
+			return false;
+		}
+		if ("true".equalsIgnoreCase(trackHeader)) {
+			return true;
+		}
+
+		return true;
 	}
 
 }

@@ -324,6 +324,15 @@ public class RestService implements AjaxRestService {
 			return this;
 		}
 
+		public Ajax track(boolean track) {
+			if (track) {
+				headers.add("X-Track-Request", "true");
+			} else {
+				headers.add("X-Track-Request", "false");
+			}
+			return this;
+		}
+
 		public Ajax header(HttpHeaders header) {
 			if (!ArgUtil.isEmpty(header)) {
 				this.headers = header;
