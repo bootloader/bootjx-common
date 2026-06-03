@@ -149,7 +149,7 @@ public class AppContextUtil {
 	}
 
 	public static boolean batchTask() {
-		return ArgUtil.parseAsBoolean(ContextUtil.map().get("isBatchTask"));
+		return ArgUtil.parseAsBoolean(ContextUtil.map().get("isBatchTask"), false);
 	}
 
 	public static UserDeviceClient getUserClient() {
