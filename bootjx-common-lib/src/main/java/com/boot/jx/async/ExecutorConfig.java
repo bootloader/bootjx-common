@@ -2,6 +2,7 @@ package com.boot.jx.async;
 
 import java.util.concurrent.Executor;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
@@ -35,11 +36,14 @@ public class ExecutorConfig extends AsyncConfigurerSupport {
 	// service provider
 	public static final String EXECUTER_PRICER_SP = "pricerExecSP";
 
+	@Value("${spring.task.execution.pool.core-size:5}")
+	Integer executionPoolCoreSize;
+
 	@Override
 	@Bean
 	public Executor getAsyncExecutor() {
 		ContextAwarePoolExecutor executor = new ContextAwarePoolExecutor();
-		executor.setCorePoolSize(5);
+		executor.setCorePoolSize(executionPoolCoreSize);
 		executor.setThreadNamePrefix(DEFAULT + "-");
 		executor.initialize();
 		return executor;
