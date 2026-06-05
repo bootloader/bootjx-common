@@ -10,13 +10,18 @@ import com.boot.utils.StringUtils.DetailsBuilder;
 
 public class StringUtilTest {
 
+	public static void main(String[] arg) {
+		String[] x = StringUtils.split("wacfb", "\\|");
+		System.out.println("====" + x.length + "  " + x[0]);
+	}
+
 	@Test
 	public void NodeEntryBoolean() {
 		assertEquals("TRUE", new NodeEntry<Object>().value("true").asBoolean(), true);
 		assertEquals("FALSE", new NodeEntry<Object>().value("false").asBoolean(), false);
 	}
 
-	//@Test
+	// @Test
 	public void normalizedString() {
 		assertEquals("N1", "Lalit Tanwar", "Lalit Tanwar");
 		assertEquals("N2", "Lalit    Tanwar", "Lalit Tanwar");
