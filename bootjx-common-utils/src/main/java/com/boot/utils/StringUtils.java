@@ -286,6 +286,9 @@ public final class StringUtils {
 	}
 
 	public static String join(String delimter, String... strs) {
+		if (strs == null || strs.length == 0) {
+			return Constants.BLANK;
+		}
 		StringJoiner sj = new StringJoiner(delimter);
 		for (String string : strs) {
 			if (ArgUtil.is(string)) {
