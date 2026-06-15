@@ -23,6 +23,14 @@ public class ConfigMeta implements Serializable {
 		TIMESPAN, SWITCH, NONE;
 	}
 
+	public static class DATA_UNITS {
+		// TIMESPAN
+		public static final String MINUTES = "min";
+		public static final String HOUR = "hr";
+		public static final String DAY = "d";
+		public static final String WEEK = "w";
+	}
+
 	public static enum CONVERT_TYPE {
 		TIME_MILLIS, BOOLEAN, STRING, NONE;
 	}
@@ -95,6 +103,7 @@ public class ConfigMeta implements Serializable {
 	}
 
 	private static final long serialVersionUID = -8418291522478302778L;
+	public static final ConfigMeta NO_CONFIG_META = new ConfigMeta();
 
 	private String title;
 	private String key;
@@ -125,6 +134,7 @@ public class ConfigMeta implements Serializable {
 	private DATA_TYPE dataType;
 	private CONVERT_TYPE converterType;
 	private MESSAGE_TYPE messageType;
+	private String[] dataUnits;
 
 	private List<ConfigOption> options;
 	private Map<String, Object> filter;
@@ -400,6 +410,31 @@ public class ConfigMeta implements Serializable {
 
 	public CONVERT_TYPE getConverterType() {
 		return converterType;
+	}
+
+	public ConfigMeta dataType(DATA_TYPE dataType) {
+		this.dataType = dataType;
+		return this;
+	}
+
+	public String[] getDataUnits() {
+		return dataUnits;
+	}
+
+	public void setDataUnits(String[] dataUnits) {
+		this.dataUnits = dataUnits;
+	}
+
+	public ConfigMeta dataType(DATA_TYPE dataType, String... dataUnits) {
+		this.dataType = dataType;
+		if (dataUnits == null || dataUnits.length == 0) {
+			if (DATA_TYPE.TIMESPAN == dataType) {
+				this.dataUnits = new String[] { DATA_UNITS.MINUTES, DATA_UNITS.HOUR, DATA_UNITS.DAY, DATA_UNITS.WEEK };
+			}
+		} else {
+			this.dataUnits = dataUnits;
+		}
+		return this;
 	}
 
 	public void setConverterType(CONVERT_TYPE converterType) {
@@ -714,6 +749,44 @@ public class ConfigMeta implements Serializable {
 
 	public void setCondition(Map<String, Object> condition) {
 		this.condition = condition;
+	}
+
+	public boolean isAllowedValue(Object value) {
+		String valueStr = ArgUtil.parseAsString(value);
+
+		String[] allowed = this.getDataUnits();
+
+		String unitsPattern = String.join("|", allowed);
+		String regex = "^[1-9]\\d*(" + unitsPattern + ")$";
+
+		if (!valueStr.matches(regex)) {
+			return false;
+		}
+		return true;
+	}
+
+	public boolean isValidValue(Object value) {
+		if (this.getDataType() == ConfigMeta.DATA_TYPE.TIMESPAN) {
+			return isAllowedValue(value);
+		}
+		return true;
+	}
+
+	/**
+	 * Validates and throws appropriate error if invalid value
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public boolean validate(Object value) {
+		if (this.getDataType() == ConfigMeta.DATA_TYPE.TIMESPAN) {
+			if (!isAllowedValue(value)) {
+				String allowedMsg = String.join(", ", this.getDataUnits());
+				throw new IllegalArgumentException(
+						"Invalid format. Allowed units for this setting are strictly: " + allowedMsg);
+			}
+		}
+		return true;
 	}
 
 }
