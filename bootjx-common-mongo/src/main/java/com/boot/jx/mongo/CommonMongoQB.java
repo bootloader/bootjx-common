@@ -1,6 +1,7 @@
 package com.boot.jx.mongo;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -225,6 +226,12 @@ public class CommonMongoQB<M extends CommonMongoQB<M, T>, T> implements IMongoQu
 	@SuppressWarnings("unchecked")
 	public M is(Object value) {
 		this.currentCriteria.is(value);
+		return (M) this;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public M in(Collection<?> values) {
+		this.currentCriteria.in(values);
 		return (M) this;
 	}
 

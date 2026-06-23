@@ -9,6 +9,7 @@ import org.bson.Document;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 import com.boot.jx.mongo.CommonDocInterfaces.TimeStampIndex;
 import com.boot.jx.mongo.CommonMongoQB.MongoQueryBuilder;
@@ -18,11 +19,43 @@ import com.boot.jx.mongo.CommonMongoStore.ModelQueryParams;
 import com.boot.jx.mongo.CommonMongoStore.PaginatedQuery;
 import com.boot.jx.mongo.QA;
 import com.boot.model.MapModel;
+import com.boot.utils.ArgUtil;
+import com.boot.utils.CollectionUtil;
 import com.boot.utils.JsonUtil;
 
 public class MongoQueryTest { // Noncompliant
 
-	public static void main(String[] args) throws ParseException, IOException {
+	public static void main(String[] args) {
+
+		List<String> ids = CollectionUtil.asList("1", "2");
+
+		String status = "QUEUD";
+		String reason = "Faltoo";
+
+		CommonMongoQueryBuilder builder = new CommonMongoQueryBuilder();
+		builder.set("status", status);
+		builder.set("stamps." + status, System.currentTimeMillis());
+
+		if (ArgUtil.is(reason)) {
+			builder.update().push("logs", reason);
+		}
+		builder.where("_id").in(ids);
+
+		System.out.println(builder.build().query().toString());
+		System.out.println(builder.build().update().toString());
+
+		Update update = new Update().set("status", status).set("stamps." + status, System.currentTimeMillis());
+
+		if (ArgUtil.is(reason)) {
+			update.push("logs", reason);
+		}
+
+		Query query = Query.query(Criteria.where("_id").in(ids));
+		System.out.println(query.toString());
+		System.out.println(update.toString());
+	}
+
+	public static void main7(String[] args) throws ParseException, IOException {
 		QA list = new QA().add(Aggregation.match(Criteria.where("bulkSessionId").is("XXXXXX")),
 				Aggregation.group("status").count().as("count"));
 		System.out.println(JsonUtil.toJson(list.piplines()));
