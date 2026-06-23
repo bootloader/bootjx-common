@@ -63,6 +63,8 @@ public class CommonMongoSource {
 	static MongoDbFactory mongoDbFactoryDefault;
 	static MongoTemplate mongoTemplateDefault;
 
+	static CommonMongoCommandListener commandListener = new CommonMongoCommandListener();
+
 	private boolean readPreferenceSecondary;
 	boolean ready = false;
 
@@ -89,7 +91,10 @@ public class CommonMongoSource {
 	private MongoDbFactory mongoDbFactory(String dataSourceUrl, USE_DB useDb) {
 		String tnt = tenant;
 		String dbtnt = tenantDB;
-		MongoClientURI mongoClientURI = new MongoClientURI(dataSourceUrl);
+
+		MongoClientOptions.Builder builder = MongoClientOptions.builder().addCommandListener(commandListener);
+
+		MongoClientURI mongoClientURI = new MongoClientURI(dataSourceUrl, builder);
 
 		synchronized (lockClient) {
 			if (sharedMongoClient == null) {
