@@ -6,6 +6,7 @@ import java.util.List;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 
 import com.boot.utils.CollectionUtil;
 
@@ -55,6 +56,25 @@ public class QA {
 
 		public ProjectBuilder append(String field, Document doc) {
 			this.project.append(field, doc);
+			return this;
+		}
+
+		public ProjectBuilder exclude(String... field) {
+			for (String f : field) {
+				this.project.append(f, 0);
+			}
+			return this;
+		}
+
+		public ProjectBuilder include(String... field) {
+			for (String f : field) {
+				this.project.append(f, 1);
+			}
+			return this;
+		}
+
+		public ProjectBuilder rename(String fromField, String toField) {
+			this.project.append(toField, "$" + fromField);
 			return this;
 		}
 

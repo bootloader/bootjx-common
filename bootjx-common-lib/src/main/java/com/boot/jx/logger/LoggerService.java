@@ -16,6 +16,7 @@ public class LoggerService {
 	public static class LogEntry implements Serializable {
 
 		private static final long serialVersionUID = 285769445887570214L;
+
 		String label;
 		long duration;
 
@@ -43,6 +44,12 @@ public class LoggerService {
 
 	public static class LogTimer implements Serializable {
 
+		private static final Logger LOGGER = LoggerFactory.getLogger(LogEntry.class);
+
+		public static boolean isLocal() {
+			return LOGGER.isDebugEnabled() || false;
+		}
+
 		private static final long serialVersionUID = 1L;
 		protected long lastTime;
 		protected List<LogEntry> logs = new ArrayList<>();
@@ -57,6 +64,8 @@ public class LoggerService {
 
 			logs.add(new LogEntry(label, diff));
 			lastTime = now;
+			if (isLocal())
+				LOGGER.info("TIMER: {} {}", label, diff);
 		}
 
 		public long getLastTime() {

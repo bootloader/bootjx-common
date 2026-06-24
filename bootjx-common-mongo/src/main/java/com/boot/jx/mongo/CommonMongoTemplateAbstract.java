@@ -101,7 +101,7 @@ public class CommonMongoTemplateAbstract<TStore extends CommonMongoTemplateAbstr
 	}
 
 	public <TResult> MongoResultProcessor<TResult> collection(String collection, Class<TResult> clazz) {
-		return new MongoResultProcessor<TResult>().using(this).collection(collection);
+		return new MongoResultProcessor<TResult>().using(this).collection(clazz).collection(collection);
 	}
 
 	public <TResult> MongoResultProcessor<TResult> collection(Class<TResult> clazz) {

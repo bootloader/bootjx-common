@@ -92,7 +92,7 @@ public class MongoUtils {
 
 		public MongoQueryBuilder<T> qb() {
 			if (this.qb == null) {
-				this.qb = MQB.collection(collectionClass);
+				this.qb = MQB.collection(collectionClass, collection);
 			}
 			return this.qb;
 		}
@@ -139,17 +139,26 @@ public class MongoUtils {
 			return this;
 		}
 
+		public MongoResultProcessor<T> findOne(IMongoQueryBuilder<T> builder) {
+			this.results = CollectionUtil.asList(mongoTemplate.findOne(builder));
+			return this;
+		}
+
 		public MongoResultProcessor<T> find(Criteria criteria) {
 			this.qb().where(criteria);
 			return this.find(qb);
 		}
 
 		public MongoResultProcessor<T> find() {
-			return this.find(qb);
+			return this.find(qb());
+		}
+
+		public MongoResultProcessor<T> findOne() {
+			return this.findOne(qb());
 		}
 
 		public MongoResultProcessor<T> update() {
-			mongoTemplate.update(qb);
+			mongoTemplate.update(qb());
 			return this;
 		}
 

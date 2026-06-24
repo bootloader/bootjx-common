@@ -228,7 +228,7 @@ public class CommonMongoQB<M extends CommonMongoQB<M, T>, T> implements IMongoQu
 		this.currentCriteria.is(value);
 		return (M) this;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public M in(Collection<?> values) {
 		this.currentCriteria.in(values);
@@ -487,6 +487,13 @@ public class CommonMongoQB<M extends CommonMongoQB<M, T>, T> implements IMongoQu
 	public static <T> MongoQueryBuilder<T> collection(Class<T> docClass) {
 		MongoQueryBuilder<T> x = new MongoQueryBuilder<T>();
 		x.setDocClass(docClass);
+		return x;
+	}
+
+	public static <T> MongoQueryBuilder<T> collection(Class<T> docClass, String collectionName) {
+		MongoQueryBuilder<T> x = new MongoQueryBuilder<T>();
+		x.setDocClass(docClass);
+		x.setCollectionName(collectionName);
 		return x;
 	}
 
