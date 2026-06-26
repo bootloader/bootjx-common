@@ -13,6 +13,10 @@ public class LoggerService {
 		return LoggerFactory.getLogger(clazz);
 	}
 
+	public static boolean isLocalDebug() {
+		return false;
+	}
+
 	public static class LogEntry implements Serializable {
 
 		private static final long serialVersionUID = 285769445887570214L;
@@ -47,7 +51,7 @@ public class LoggerService {
 		private static final Logger LOGGER = LoggerFactory.getLogger(LogEntry.class);
 
 		public static boolean isLocal() {
-			return LOGGER.isDebugEnabled() || false;
+			return LOGGER.isDebugEnabled() || isLocalDebug() || false;
 		}
 
 		private static final long serialVersionUID = 1L;

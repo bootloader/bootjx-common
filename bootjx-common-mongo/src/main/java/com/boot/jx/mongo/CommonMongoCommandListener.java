@@ -9,6 +9,7 @@ import org.bson.BsonValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.boot.jx.logger.LoggerService;
 import com.boot.utils.ArgUtil;
 import com.mongodb.event.CommandFailedEvent;
 import com.mongodb.event.CommandListener;
@@ -21,7 +22,7 @@ public class CommonMongoCommandListener implements CommandListener {
 	private final ConcurrentHashMap<Integer, CommandData> timings = new ConcurrentHashMap<>();
 
 	public static boolean isLocal() {
-		return LOGGER.isDebugEnabled() || false;
+		return LOGGER.isDebugEnabled() || LoggerService.isLocalDebug() || false;
 	}
 
 	public static class CommandData {

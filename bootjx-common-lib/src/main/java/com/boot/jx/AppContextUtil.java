@@ -19,7 +19,9 @@ import com.boot.jx.dict.Language;
 import com.boot.jx.dict.UserClient.UserDeviceClient;
 import com.boot.jx.http.CommonHttpRequest.ApiRequestDetail;
 import com.boot.jx.http.RequestType;
+import com.boot.jx.scope.ThreadScope;
 import com.boot.jx.scope.tnt.TenantContextHolder;
+import com.boot.jx.scope.tnt.TenantScope;
 import com.boot.jx.scope.tnt.Tenants.Tenant;
 import com.boot.utils.ArgUtil;
 import com.boot.utils.Constants;
@@ -371,6 +373,7 @@ public class AppContextUtil {
 	 */
 	public static void clear() {
 		MDC.clear();
+		ThreadScope.SCOPE.clear();
 		ContextUtil.clear();
 	}
 

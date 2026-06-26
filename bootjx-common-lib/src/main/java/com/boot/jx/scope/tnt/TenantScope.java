@@ -11,6 +11,8 @@ import org.springframework.beans.factory.config.Scope;
 
 public class TenantScope implements Scope {
 
+	public static final TenantScope SCOPE = new TenantScope();
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(TenantScope.class);
 
 	private Map<String, Object> scopedObjects = Collections.synchronizedMap(new HashMap<String, Object>());
@@ -59,6 +61,17 @@ public class TenantScope implements Scope {
 
 	private Object assignValues(Object object) {
 		return TenantProperties.assignValues(getConversationId(), object);
+	}
+
+	public void clear() {
+		String prefix = getConversationId() + ":";
+		destructionCallbacks.entrySet().removeIf(e -> {
+			if (e.getKey().startsWith(prefix)) {
+				e.getValue().run(); // <-- this calls @PreDestroy
+				return true;
+			}
+			return false;
+		});
 	}
 
 }

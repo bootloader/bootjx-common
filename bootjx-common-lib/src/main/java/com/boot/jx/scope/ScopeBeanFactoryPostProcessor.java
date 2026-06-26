@@ -12,8 +12,9 @@ public class ScopeBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
 
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory factory) throws BeansException {
+		// System.out.println("ScopeBeanFactoryPostProcessor:postProcessBeanFactory");
 		factory.registerScope("tenant", new TenantScope());
-		factory.registerScope("thread", new ThreadScope());
+		factory.registerScope("thread", ThreadScope.SCOPE);
 		factory.registerScope(AppConstants.Scopes.VENDOR, new VendorScope());
 	}
 }
