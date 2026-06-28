@@ -36,6 +36,7 @@ public class CommonMongoSource {
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
 	private String dataSourceUrl;
+	private String dataSourceUrlMasked;
 
 	private String globalDataSourceUrl;
 
@@ -46,6 +47,13 @@ public class CommonMongoSource {
 
 	public String getDataSourceUrl() {
 		return dataSourceUrl;
+	}
+
+	public String getDataSourceUrlMasked() {
+		if (dataSourceUrl == null) {
+			dataSourceUrlMasked = dataSourceUrl.replaceAll("(mongodb(?:\\+srv)?://[^:]+:)([^@]+)(@)", "$1******$3");
+		}
+		return dataSourceUrlMasked;
 	}
 
 	private static Object lockClient = new Object();
@@ -164,7 +172,7 @@ public class CommonMongoSource {
 		if (ArgUtil.is(USE_DB.USE_NO_DB, useDb)) {
 			if (mongoTemplateNoDb == null) {
 				synchronized (lockNoDb) {
-					LOGGER.info("mongoTemplateNoDb is NULL So creating One {} {}", getDataSourceUrl());
+					LOGGER.info("mongoTemplateNoDb is NULL So creating One {} {}", getDataSourceUrlMasked());
 					mongoDbFactoryNoDb = mongoDbFactory(useDb);
 					if (ArgUtil.is(mongoDbFactoryNoDb)) {
 						mongoTemplateNoDb = new MongoTemplate(mongoDbFactoryNoDb,
@@ -181,7 +189,7 @@ public class CommonMongoSource {
 		} else if (ArgUtil.is(USE_DB.USE_DEFAULT_DB, useDb)) {
 			if (mongoTemplateDefault == null) {
 				synchronized (lockDefault) {
-					LOGGER.info("mongoTemplate is NULL So creating One {} {}", getDataSourceUrl());
+					LOGGER.info("mongoTemplate is NULL So creating One {} {}", getDataSourceUrlMasked());
 					mongoDbFactoryDefault = mongoDbFactory(useDb);
 					if (ArgUtil.is(mongoDbFactoryDefault)) {
 						mongoTemplateDefault = new MongoTemplate(mongoDbFactoryDefault,
@@ -199,7 +207,7 @@ public class CommonMongoSource {
 		} else {
 			if (mongoTemplate == null) {
 				synchronized (lock) {
-					LOGGER.debug("mongoTemplate is NULL So creating One {} {}", getDataSourceUrl());
+					LOGGER.debug("mongoTemplate is NULL So creating One {} {}", getDataSourceUrlMasked());
 					mongoDbFactory = getMongoDbFactory();
 					if (ArgUtil.is(mongoDbFactory)) {
 						mongoTemplate = new MongoTemplate(mongoDbFactory, mappingMongoConverter(mongoDbFactory));
