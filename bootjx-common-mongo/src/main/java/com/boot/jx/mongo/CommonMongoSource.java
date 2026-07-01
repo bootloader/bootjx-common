@@ -56,7 +56,7 @@ public class CommonMongoSource {
 		return dataSourceUrlMasked;
 	}
 
-	private static Object lockClient = new Object();
+	private static final Object lockClient = new Object();
 	private static MongoClient sharedMongoClient;
 
 	private static Object lock = new Object();
