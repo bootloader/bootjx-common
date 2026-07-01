@@ -20,6 +20,11 @@ public class CommonMongoCommandListener implements CommandListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommonMongoCommandListener.class);
 	private final ConcurrentHashMap<Integer, CommandData> timings = new ConcurrentHashMap<>();
+	private String name;
+
+	public CommonMongoCommandListener(String name) {
+		this.name = name;
+	}
 
 	public static boolean isLocal() {
 		return LOGGER.isDebugEnabled() || LoggerService.isLocalDebug() || false;
@@ -28,6 +33,7 @@ public class CommonMongoCommandListener implements CommandListener {
 	public static class CommandData {
 		protected Long startTime;
 		protected String collection;
+		protected String database;
 	}
 
 	private String getCollection(CommandStartedEvent event) {
@@ -64,6 +70,7 @@ public class CommonMongoCommandListener implements CommandListener {
 			CommandData d = new CommandData();
 			d.startTime = System.nanoTime();
 			d.collection = getCollection(event);
+			d.database = event.getDatabaseName();
 			if (ArgUtil.is(d.collection)) {
 				timings.put(event.getRequestId(), d);
 			}
@@ -84,7 +91,7 @@ public class CommonMongoCommandListener implements CommandListener {
 			String command = event.getCommandName();
 
 			if (ArgUtil.is(data.collection) && ArgUtil.is(command)) {
-				LOGGER.info("{} [{}] : {}", command, data.collection, millis);
+				LOGGER.info("{} [{}] : {}   ----   [{}]{}", command, data.collection, millis, name, data.database);
 			}
 		}
 	}

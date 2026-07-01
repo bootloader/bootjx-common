@@ -12,7 +12,7 @@ import com.boot.jx.scope.tnt.TenantDefinations.TenantDefaultQualifier;
 @Component
 public class CommonMongoTemplate extends CommonMongoStore<CommonMongoTemplate> {
 
-	public static class TenantDefaultMongoTemplateImpl extends CommonMongoTemplate {
+	public static class TenantDefaultMongoTemplate extends CommonMongoTemplate {
 
 		@Autowired
 		@TenantDefaultQualifier
@@ -34,6 +34,19 @@ public class CommonMongoTemplate extends CommonMongoStore<CommonMongoTemplate> {
 		@Override
 		protected MongoTemplate getCommonMongoTemplate() {
 			return mongoReadOnlyTemplate;
+		}
+
+	}
+
+	public static class TenantDefaultReadOnlyMongoTemplate extends CommonMongoTemplate {
+
+		@Autowired
+		@Qualifier("mongoTenantDefaultReadOnlyTemplate")
+		protected MongoTemplate mongoTenantDefaultReadOnlyTemplate;
+
+		@Override
+		protected MongoTemplate getCommonMongoTemplate() {
+			return mongoTenantDefaultReadOnlyTemplate;
 		}
 
 	}

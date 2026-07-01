@@ -11,7 +11,8 @@ import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import com.boot.jx.mongo.CommonMongoTemplate.ReadOnlyMongoTemplate;
-import com.boot.jx.mongo.CommonMongoTemplate.TenantDefaultMongoTemplateImpl;
+import com.boot.jx.mongo.CommonMongoTemplate.TenantDefaultMongoTemplate;
+import com.boot.jx.mongo.CommonMongoTemplate.TenantDefaultReadOnlyMongoTemplate;
 import com.boot.jx.scope.tnt.TenantDefinations.TenantDefaultQualifier;
 
 @Configuration
@@ -41,9 +42,8 @@ public class CommonMongoConfig {
 	}
 
 	@Bean
-	@TenantDefaultQualifier
-	public CommonMongoTemplate tenantDefaultMongoTemplate() {
-		return new TenantDefaultMongoTemplateImpl();
+	public TenantDefaultMongoTemplate tenantDefaultMongoTemplate() {
+		return new TenantDefaultMongoTemplate();
 	}
 
 	@Bean
@@ -57,6 +57,20 @@ public class CommonMongoConfig {
 	@Bean
 	public ReadOnlyMongoTemplate readOnlyMongoTemplate() {
 		return new ReadOnlyMongoTemplate();
+	}
+
+	@Bean
+	@Qualifier("mongoTenantDefaultReadOnlyTemplate")
+	public MongoTemplate mongoTenantDefaultReadOnlyTemplate() {
+		CommonMongoSource source = commonMongoSourceProvider.getReadOnlySource();
+		MongoDbFactory factory = source.getMongoDbFactory(dataSourceUrl);
+		return new MongoTemplateCommonImpl(factory, source.mappingMongoConverter(factory)).readOnly(true)
+				.onlyDefault(true);
+	}
+
+	@Bean
+	public TenantDefaultReadOnlyMongoTemplate tenantDefaultReadOnlyMongoTemplate() {
+		return new TenantDefaultReadOnlyMongoTemplate();
 	}
 
 }

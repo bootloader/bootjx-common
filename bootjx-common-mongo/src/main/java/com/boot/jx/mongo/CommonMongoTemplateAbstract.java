@@ -213,6 +213,7 @@ public class CommonMongoTemplateAbstract<TStore extends CommonMongoTemplateAbstr
 		return null;
 	}
 
+	@Override
 	public <T> T findByIdSafeCheck(Object id, Class<T> clazz) {
 		Criteria c = Criteria.where("_id").is(id);
 		String idStr = ArgUtil.parseAsString(id);
@@ -254,7 +255,7 @@ public class CommonMongoTemplateAbstract<TStore extends CommonMongoTemplateAbstr
 	public <T> List<T> findReadOnly(IMongoQueryBuilder<T> builder) {
 		// System.out.println("+++"+builder.getQuery());
 		if (ArgUtil.is(builder.getCollectionName())) {
-			return find(builder.build().getQuery(), builder.getDocClass(), builder.getCollectionName());
+			return findReadOnly(builder.build().getQuery(), builder.getDocClass(), builder.getCollectionName());
 		}
 		return findReadOnly(builder.build().getQuery(), builder.getDocClass());
 	}

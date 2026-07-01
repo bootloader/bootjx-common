@@ -1,6 +1,7 @@
 package com.boot.jx.mongo;
 
 import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,13 @@ public class CommonMongoSource {
 
 	private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
+	public static class MongoClientHolder {
+		MongoClient client;
+		MongoClientURI uri;
+	}
+
+	private static final ConcurrentHashMap<String, MongoClientHolder> CLIENTS = new ConcurrentHashMap<>();
+
 	private String dataSourceUrl;
 	private String dataSourceUrlMasked;
 
@@ -44,6 +52,11 @@ public class CommonMongoSource {
 
 	private String tenant;
 	private String tenantDB;
+	private String name;
+
+	public CommonMongoSource(String name) {
+		this.name = name;
+	}
 
 	public String getDataSourceUrl() {
 		return dataSourceUrl;
@@ -56,8 +69,8 @@ public class CommonMongoSource {
 		return dataSourceUrlMasked;
 	}
 
-	private static final Object lockClient = new Object();
-	private static MongoClient sharedMongoClient;
+//	private final Object lockClient = new Object();
+//	private static MongoClient sharedMongoClient;
 
 	private static Object lock = new Object();
 	MongoDbFactory mongoDbFactory;
@@ -70,8 +83,6 @@ public class CommonMongoSource {
 	private static Object lockDefault = new Object();
 	static MongoDbFactory mongoDbFactoryDefault;
 	static MongoTemplate mongoTemplateDefault;
-
-	static CommonMongoCommandListener commandListener = new CommonMongoCommandListener();
 
 	private boolean readPreferenceSecondary;
 	boolean ready = false;
@@ -100,34 +111,41 @@ public class CommonMongoSource {
 		String tnt = tenant;
 		String dbtnt = tenantDB;
 
-		MongoClientOptions.Builder builder = MongoClientOptions.builder().addCommandListener(commandListener);
+		MongoClientHolder clientHolder = CLIENTS.computeIfAbsent(name, key -> {
+			MongoClientHolder holder = new MongoClientHolder();
+			MongoClientOptions.Builder builder = MongoClientOptions.builder()
+					.addCommandListener(new CommonMongoCommandListener(name));
+			holder.uri = new MongoClientURI(dataSourceUrl, builder);
+			holder.client = new MongoClient(holder.uri);
+			MongoClientOptions o = holder.client.getMongoClientOptions();
+			LOGGER.info("MONGODB: MongoClient:{}:{}   {}", tnt, dbtnt, o.getConnectionsPerHost());
+			return holder;
+		});
 
-		MongoClientURI mongoClientURI = new MongoClientURI(dataSourceUrl, builder);
-
-		synchronized (lockClient) {
-			if (sharedMongoClient == null) {
-				sharedMongoClient = new MongoClient(mongoClientURI);
-				MongoClientOptions o = sharedMongoClient.getMongoClientOptions();
-				LOGGER.info("MONGODB: MongoClient:{}:{}   {}", tnt, dbtnt, o.getConnectionsPerHost());
-			}
-		}
+//		synchronized (lockClient) {
+//			if (sharedMongoClient == null) {
+//				sharedMongoClient = new MongoClient(mongoClientURI);
+//				MongoClientOptions o = sharedMongoClient.getMongoClientOptions();
+//				LOGGER.info("MONGODB: MongoClient:{}:{}   {}", tnt, dbtnt, o.getConnectionsPerHost());
+//			}
+//		}
 
 		String dataBaseName = (globalDBProfix + "_" + dbtnt);
 		if (ArgUtil.is(useDb, USE_DB.USE_NO_DB)) {
 			// dataBaseName = "nodb";
-			dataBaseName = mongoClientURI.getDatabase();
+			dataBaseName = clientHolder.uri.getDatabase();
 		} else if ((!ArgUtil.areEqual(StringUtils.trim(dataSourceUrl), StringUtils.trim(globalDataSourceUrl))
 				|| Tenants.isDefault(tnt) || (ArgUtil.is(useDb, USE_DB.USE_DEFAULT_DB)))) {
-			dataBaseName = mongoClientURI.getDatabase();
+			dataBaseName = clientHolder.uri.getDatabase();
 		}
 
 		if (this.readPreferenceSecondary || isReadOnly()) {
 			LOGGER.info("MONGODB[RO]: {}:{}:{}", dataBaseName, Tenants.isDefault(tnt), dbtnt);
-			return new ReadPreferenceMongoDbFactory(sharedMongoClient, dataBaseName,
+			return new ReadPreferenceMongoDbFactory(clientHolder.client, dataBaseName,
 					ReadPreference.secondaryPreferred());
 		} else {
 			LOGGER.info("MONGODB[WR]: {}:{}:{}", dataBaseName, Tenants.isDefault(tnt), dbtnt);
-			return new SimpleMongoDbFactory(sharedMongoClient, dataBaseName);
+			return new SimpleMongoDbFactory(clientHolder.client, dataBaseName);
 		}
 
 	}

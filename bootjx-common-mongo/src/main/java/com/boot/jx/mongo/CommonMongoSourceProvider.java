@@ -15,7 +15,7 @@ import com.boot.utils.ArgUtil;
 public class CommonMongoSourceProvider {
 
 	// WRITER
-	private static Object WRITER = new Object();
+	private Object WRITER = new Object();
 	private CommonMongoSource writer;
 
 	@TenantValue("${spring.data.mongodb.uri}")
@@ -28,7 +28,7 @@ public class CommonMongoSourceProvider {
 	private String globalDBProfix;
 
 	// READER
-	private static Object READER = new Object();
+	private Object READER = new Object();
 	private CommonMongoSource reader;
 	@TenantValue("${spring.ro.data.mongodb.uri}")
 	private String dataSourceUrlReadOnly;
@@ -46,7 +46,7 @@ public class CommonMongoSourceProvider {
 			boolean readOnly) {
 		String tnt = AppContextUtil.getTenant();
 		String dbtnt = ArgUtil.is(tenantResolver) ? tenantResolver.getDBName(tnt) : tnt;
-		CommonMongoSource commonMongoSource = new CommonMongoSource();
+		CommonMongoSource commonMongoSource = new CommonMongoSource(readOnly ? "RO" : "WR");
 		commonMongoSource.setTenant(tnt);
 		commonMongoSource.setTenantDB(dbtnt);
 		commonMongoSource.setDataSourceUrl(dataSourceUrl);
