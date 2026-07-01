@@ -50,7 +50,7 @@ public class CommonMongoSource {
 	}
 
 	public String getDataSourceUrlMasked() {
-		if (dataSourceUrl == null) {
+		if (dataSourceUrlMasked == null && dataSourceUrl != null) {
 			dataSourceUrlMasked = dataSourceUrl.replaceAll("(mongodb(?:\\+srv)?://[^:]+:)([^@]+)(@)", "$1******$3");
 		}
 		return dataSourceUrlMasked;
