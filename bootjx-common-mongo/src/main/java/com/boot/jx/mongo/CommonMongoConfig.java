@@ -73,4 +73,10 @@ public class CommonMongoConfig {
 		return new TenantDefaultReadOnlyMongoTemplate();
 	}
 
+	@Bean
+	@Primary
+	public MongoStore mongoStore() {
+		return new MongoStore();
+	}
+
 }

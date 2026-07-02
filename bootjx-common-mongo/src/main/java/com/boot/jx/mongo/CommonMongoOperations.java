@@ -30,6 +30,8 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.util.CloseableIterator;
 
 import com.boot.jx.mongo.CommonDocInterfaces.IMongoQueryBuilder;
+import com.boot.jx.mongo.CommonMongoQueryBuilder.DocQueryBuilder;
+import com.boot.jx.mongo.MongoUtils.MongoResultProcessor;
 import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
@@ -208,6 +210,8 @@ public interface CommonMongoOperations {
 
 	// Builder operation=====
 
+	public <T> T save(DocQueryBuilder<T> builder);
+
 	public <T> T findOne(IMongoQueryBuilder<T> builder);
 
 	public <T> List<T> find(IMongoQueryBuilder<T> builder);
@@ -229,5 +233,17 @@ public interface CommonMongoOperations {
 
 	public <T> long count(IMongoQueryBuilder<T> builder);
 
+	public <T> T findByIdString(String id, Class<T> clazz);
+
 	public <T> T findByIdSafeCheck(Object id, Class<T> clazz);
+
+	public MongoResultProcessor<Document> collection(String collection);
+
+	public <TResult> MongoResultProcessor<TResult> collection(String collection, Class<TResult> clazz);
+
+	public <TResult> MongoResultProcessor<TResult> collection(Class<TResult> clazz);
+
+	public <T> T removeAndAudit(T objectToSave);
+
+	public <T> T removeAndAudit(String id, Class<T> clazz);
 }

@@ -31,16 +31,18 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.util.CloseableIterator;
 
 import com.boot.jx.mongo.CommonDocInterfaces.IMongoQueryBuilder;
+import com.boot.jx.mongo.CommonMongoQueryBuilder.DocQueryBuilder;
 import com.boot.jx.mongo.CommonMongoTemplate.ReadOnlyMongoTemplate;
 import com.boot.jx.mongo.CommonMongoTemplate.TenantDefaultMongoTemplate;
 import com.boot.jx.mongo.CommonMongoTemplate.TenantDefaultReadOnlyMongoTemplate;
+import com.boot.jx.mongo.MongoUtils.MongoResultProcessor;
 import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
-public abstract class AbstractMongoStore implements CommonMongoOperations {
+public class MongoStore implements CommonMongoOperations {
 
 	@Autowired
 	protected CommonMongoTemplate commonMongoTemplate;
@@ -295,6 +297,11 @@ public abstract class AbstractMongoStore implements CommonMongoOperations {
 	}
 
 	@Override
+	public <T> T findByIdString(String id, Class<T> clazz) {
+		return db().findByIdString(id, clazz);
+	}
+
+	@Override
 	public <T> T findByIdSafeCheck(Object id, Class<T> entityClass) {
 		return db().findByIdSafeCheck(id, entityClass);
 	}
@@ -440,6 +447,10 @@ public abstract class AbstractMongoStore implements CommonMongoOperations {
 		return db().getDb();
 	}
 
+	public <T> T save(DocQueryBuilder<T> builder) {
+		return db().save(builder);
+	}
+
 	public <T> T findOne(IMongoQueryBuilder<T> builder) {
 		return db().findOne(builder);
 	}
@@ -472,6 +483,30 @@ public abstract class AbstractMongoStore implements CommonMongoOperations {
 	@Override
 	public <T> long count(IMongoQueryBuilder<T> builder) {
 		return db().count(builder);
+	}
+
+	public <T> T removeAndAudit(T objectToSave) {
+		return db().removeAndAudit(objectToSave);
+	}
+
+	@Override
+	public <T> T removeAndAudit(String id, Class<T> clazz) {
+		return db().removeAndAudit(id, clazz);
+	}
+
+	@Override
+	public MongoResultProcessor<Document> collection(String collection) {
+		return db().collection(collection);
+	}
+
+	@Override
+	public <TResult> MongoResultProcessor<TResult> collection(String collection, Class<TResult> clazz) {
+		return db().collection(collection, clazz);
+	}
+
+	@Override
+	public <TResult> MongoResultProcessor<TResult> collection(Class<TResult> clazz) {
+		return db().collection(clazz);
 	}
 
 }
