@@ -34,6 +34,7 @@ import com.boot.jx.model.ModelPatch.ModelPatches;
 import com.boot.jx.mongo.CommonDocInterfaces.IMongoQueryBuilder;
 import com.boot.jx.mongo.CommonDocInterfaces.SimpleDocument;
 import com.boot.jx.mongo.CommonMongoQueryBuilder.DocQueryBuilder;
+import com.boot.jx.mongo.CommonMongoStore.PaginatedQuery;
 import com.boot.jx.mongo.CommonMongoTemplate.ReadOnlyMongoTemplate;
 import com.boot.jx.mongo.CommonMongoTemplate.TenantDefaultMongoTemplate;
 import com.boot.jx.mongo.CommonMongoTemplate.TenantDefaultReadOnlyMongoTemplate;
@@ -524,7 +525,11 @@ public class MongoStore implements CommonMongoOperations {
 	@Override
 	public <T extends SimpleDocument> UpdateResult patch(ModelPatches patches, Class<T> clazz)
 			throws InstantiationException, IllegalAccessException {
-		return this.patch(patches, clazz);
+		return db().patch(patches, clazz);
+	}
+
+	public <T> PaginatedQuery<T> getPages(PaginatedQuery<T> query) {
+		return db().getPages(query);
 	}
 
 }

@@ -36,7 +36,6 @@ import com.boot.jx.mongo.CommonDocInterfaces.TimeStampIndex.UpdatedTimeStampInde
 import com.boot.jx.mongo.CommonMongoQueryBuilder.DocQueryBuilder;
 import com.boot.jx.mongo.CommonMongoQueryBuilder.SimpleDocQueryBuilder;
 import com.boot.jx.mongo.MongoUtils.MongoResultProcessor;
-import com.boot.jx.scope.tnt.TenantDefinations.TenantDefaultQualifier;
 import com.boot.model.TimeModels.TimeStampCreatedSupport;
 import com.boot.model.TimeModels.TimeStampUpdatedSupport;
 import com.boot.utils.ArgUtil;
@@ -47,19 +46,6 @@ public class CommonMongoTemplateAbstract<TStore extends CommonMongoTemplateAbstr
 		extends CommonMongoTemplateDefault {
 
 	public static final Logger LOGGER = LoggerService.getLogger(CommonMongoTemplateAbstract.class);
-
-	public static class TenantDefaultMongoStore<DStore extends TenantDefaultMongoStore<DStore>>
-			extends CommonMongoTemplateAbstract<DStore> {
-
-		@Autowired
-		@TenantDefaultQualifier
-		protected MongoTemplate mongoTemplateTenantDefault;
-
-		@Override
-		protected MongoTemplate getCommonMongoTemplate() {
-			return mongoTemplateTenantDefault;
-		}
-	}
 
 	@Autowired
 	protected MongoTemplate mongoTemplate;

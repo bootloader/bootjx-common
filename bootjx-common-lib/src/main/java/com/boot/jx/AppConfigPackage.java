@@ -138,6 +138,16 @@ public class AppConfigPackage implements ApplicationEventPublisherAware {
 			return this;
 		}
 
+		public SharedConfigChangeBuilder details(Map<String, String> details) {
+			this.change.setDetails(details);
+			return this;
+		}
+
+		public SharedConfigChangeBuilder id(String id) {
+			this.change.setDetails(null);;
+			return this;
+		}
+
 		public AppSharedConfigChange build() {
 			return this.change;
 		}

@@ -33,6 +33,7 @@ import com.boot.jx.model.ModelPatch.ModelPatches;
 import com.boot.jx.mongo.CommonDocInterfaces.IMongoQueryBuilder;
 import com.boot.jx.mongo.CommonDocInterfaces.SimpleDocument;
 import com.boot.jx.mongo.CommonMongoQueryBuilder.DocQueryBuilder;
+import com.boot.jx.mongo.CommonMongoStore.PaginatedQuery;
 import com.boot.jx.mongo.MongoUtils.MongoResultProcessor;
 import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoCollection;
@@ -255,4 +256,6 @@ public interface CommonMongoOperations {
 
 	public <T extends SimpleDocument> UpdateResult patch(ModelPatches patches, Class<T> clazz)
 			throws InstantiationException, IllegalAccessException;
+
+	//public <T> PaginatedQuery<T> getPages(PaginatedQuery<T> query);
 }
