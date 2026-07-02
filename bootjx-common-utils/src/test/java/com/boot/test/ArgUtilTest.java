@@ -15,8 +15,17 @@ public class ArgUtilTest { // Noncompliant
 	public static final Pattern PROXY = Pattern.compile("\\/proxy\\ ([a-zA-Z0-9_\\-]+)$");
 
 	public static void main(String[] args) throws ParseException {
+		boolean x = true, y = true, z = false, w = false;
+		checkAssert("=====true", ArgUtil.is(x, y), true);
+		checkAssert("=====true", ArgUtil.is(x, z), false);
+		checkAssert("=====true", ArgUtil.is(z, w), true);
+		Boolean X = false, Y = false;
+		checkAssert("=====true", ArgUtil.is(X, Y), true);
+	}
+
+	public static void main6(String[] args) throws ParseException {
 		System.out.println(ArgUtil.any("e".equals("v"), "e".equals("e")));
-		System.out.println("- "+ArgUtil.anyOf(true,5));
+		System.out.println("- " + ArgUtil.anyOf(true, 5));
 	}
 
 	public static void main5(String[] args) throws ParseException {

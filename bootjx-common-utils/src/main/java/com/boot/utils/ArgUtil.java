@@ -798,9 +798,19 @@ public final class ArgUtil {
 	}
 
 	public static boolean equals(Object a, Object b) {
-		if (a == null || b == null) {
-			return (a == null && b == null);
+		if (a == b) {
+			return true;
 		}
+
+		if (a == null || b == null) {
+			return false;
+		}
+
+		if (a.getClass() == b.getClass()
+				&& (a instanceof Boolean || a instanceof Number || a instanceof Enum || a instanceof String)) {
+			return a.equals(b);
+		}
+
 		String strA = parseAsString(a, Constants.BLANK);
 		String strB = parseAsString(b, Constants.BLANK);
 		return strA.equals(strB);
