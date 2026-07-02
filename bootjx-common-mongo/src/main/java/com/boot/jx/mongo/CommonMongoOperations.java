@@ -29,7 +29,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.util.CloseableIterator;
 
+import com.boot.jx.model.ModelPatch.ModelPatches;
 import com.boot.jx.mongo.CommonDocInterfaces.IMongoQueryBuilder;
+import com.boot.jx.mongo.CommonDocInterfaces.SimpleDocument;
 import com.boot.jx.mongo.CommonMongoQueryBuilder.DocQueryBuilder;
 import com.boot.jx.mongo.MongoUtils.MongoResultProcessor;
 import com.mongodb.ReadPreference;
@@ -231,11 +233,15 @@ public interface CommonMongoOperations {
 
 	public <T> UpdateResult updateFirst(IMongoQueryBuilder<T> builder);
 
+	public <T> UpdateResult updateMulti(IMongoQueryBuilder<T> builder);
+
 	public <T> long count(IMongoQueryBuilder<T> builder);
 
 	public <T> T findByIdString(String id, Class<T> clazz);
 
 	public <T> T findByIdSafeCheck(Object id, Class<T> clazz);
+
+	public <T> T findByIdOrDefault(String id, T defaultValue);
 
 	public MongoResultProcessor<Document> collection(String collection);
 
@@ -246,4 +252,7 @@ public interface CommonMongoOperations {
 	public <T> T removeAndAudit(T objectToSave);
 
 	public <T> T removeAndAudit(String id, Class<T> clazz);
+
+	public <T extends SimpleDocument> UpdateResult patch(ModelPatches patches, Class<T> clazz)
+			throws InstantiationException, IllegalAccessException;
 }

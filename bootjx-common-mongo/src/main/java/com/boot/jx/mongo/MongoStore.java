@@ -30,7 +30,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.util.CloseableIterator;
 
+import com.boot.jx.model.ModelPatch.ModelPatches;
 import com.boot.jx.mongo.CommonDocInterfaces.IMongoQueryBuilder;
+import com.boot.jx.mongo.CommonDocInterfaces.SimpleDocument;
 import com.boot.jx.mongo.CommonMongoQueryBuilder.DocQueryBuilder;
 import com.boot.jx.mongo.CommonMongoTemplate.ReadOnlyMongoTemplate;
 import com.boot.jx.mongo.CommonMongoTemplate.TenantDefaultMongoTemplate;
@@ -306,6 +308,11 @@ public class MongoStore implements CommonMongoOperations {
 		return db().findByIdSafeCheck(id, entityClass);
 	}
 
+	@Override
+	public <T> T findByIdOrDefault(String id, T defaultValue) {
+		return db().findByIdOrDefault(id, defaultValue);
+	}
+
 	public <T> T findAndModify(Query query, Update update, Class<T> entityClass) {
 		return db().findAndModify(query, update, entityClass);
 	}
@@ -507,6 +514,17 @@ public class MongoStore implements CommonMongoOperations {
 	@Override
 	public <TResult> MongoResultProcessor<TResult> collection(Class<TResult> clazz) {
 		return db().collection(clazz);
+	}
+
+	@Override
+	public <T> UpdateResult updateMulti(IMongoQueryBuilder<T> builder) {
+		return db().updateMulti(builder);
+	}
+
+	@Override
+	public <T extends SimpleDocument> UpdateResult patch(ModelPatches patches, Class<T> clazz)
+			throws InstantiationException, IllegalAccessException {
+		return this.patch(patches, clazz);
 	}
 
 }
