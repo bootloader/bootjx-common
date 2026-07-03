@@ -186,9 +186,9 @@ public class MongoUtils {
 			return this.aggregate(aggreQuery.piplines());
 		}
 
-		public MongoResultProcessor<T> distinct(String fieldkey, Class<T> fieldkeyType) {
-			iterableResults = collection().distinct(fieldkey, fieldkeyType);
-			return this;
+		public <TResult> MongoResultProcessor<TResult> distinct(String fieldkey, Class<TResult> fieldkeyType) {
+			MongoResultProcessor<TResult> newP = new MongoResultProcessor<TResult>();
+			return newP.results(collection().distinct(fieldkey, fieldkeyType));
 		}
 
 		public MongoResultProcessor<String> distinct(String fieldkey) {
