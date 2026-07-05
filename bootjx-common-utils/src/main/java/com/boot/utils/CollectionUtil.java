@@ -274,6 +274,17 @@ public final class CollectionUtil {
 		return elements;
 	}
 
+	public static <T> T[] reversed(T[] array) {
+		T[] copy = array.clone();
+
+		for (int i = 0, j = copy.length - 1; i < j; i++, j--) {
+			T temp = copy[i];
+			copy[i] = copy[j];
+			copy[j] = temp;
+		}
+		return copy;
+	}
+
 	/**
 	 * Gets the sets the.
 	 *
