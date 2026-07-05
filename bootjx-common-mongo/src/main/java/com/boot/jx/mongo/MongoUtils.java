@@ -30,6 +30,10 @@ import com.mongodb.client.MongoIterable;
 
 public class MongoUtils {
 
+	public static enum QueryMode {
+		NONE, SINGLE, MULTI, EMPTY
+	}
+
 	public static Criteria[] toArray(List<Criteria> criterias) {
 		return criterias.toArray(criterias.toArray(new Criteria[criterias.size()]));
 	}
