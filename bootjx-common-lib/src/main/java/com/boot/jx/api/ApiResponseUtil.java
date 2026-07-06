@@ -252,9 +252,10 @@ public class ApiResponseUtil {
 		throwInputException(code);
 	}
 
-	public static void throwInputException(ApiFieldError error) {
+	public static <T> T throwInputException(ApiFieldError error) {
 		addError(error);
 		throwInputException(ApiStatusCodes.PARAM_INVALID);
+		return null; // Unreachable. Exists only for compile-time type inference.
 	}
 
 	public static void throwInputException(ApiStatusCodes code, String description, ApiFieldError error) {

@@ -33,7 +33,15 @@ public class PhoneUtil {
 			this.number = number;
 		}
 
-		private PhoneNumberResult(String normalized, PhoneNumber phone, boolean mock) {
+		public PhoneNumberResult() {
+			this.phone = new PhoneNumber();
+		}
+
+		public PhoneNumberResult(PhoneNumber phone) {
+			this.phone = phone;
+		}
+
+		public PhoneNumberResult(String normalized, PhoneNumber phone, boolean mock) {
 			this.phone = phone;
 			this.mock = mock;
 			this.number = normalized;
@@ -72,6 +80,15 @@ public class PhoneUtil {
 				return number;
 			}
 			return phone.getCountryCode() + "" + phone.getNationalNumber();
+		}
+
+		public PhoneNumberResult clear() {
+			this.mock = true;
+			this.number = null;
+			if (this.phone != null) {
+				phone.clear();
+			}
+			return this;
 		}
 
 	}
@@ -114,17 +131,18 @@ public class PhoneUtil {
 		return number != null && MOCK_PREFIXES.stream().anyMatch(number::startsWith);
 	}
 
-	public static PhoneNumberResult parse(String numberToParse, String defaultRegion) {
-
+	public static PhoneNumberResult parse(String numberToParse, String defaultRegion,
+			PhoneNumberResult phoneNumberResultResuable) {
+		phoneNumberResultResuable.clear();
 		if (!ArgUtil.is(numberToParse)) {
-			return new PhoneNumberResult(null, null, false);
+			return phoneNumberResultResuable;
 		}
 		String normalized = toDigitsWithCountryCode(numberToParse);
 
 		// mock detection
 		if (isMockNumber(normalized) && normalized.length() == 12) {
 
-			PhoneNumber dummyPhone = new PhoneNumber();
+			PhoneNumber dummyPhone = phoneNumberResultResuable.getPhone();
 			if (normalized.startsWith("1555")) {
 				dummyPhone.setCountryCode(1);
 				dummyPhone.setNationalNumber(Long.parseLong(normalized.substring(1)));
@@ -135,20 +153,25 @@ public class PhoneUtil {
 				dummyPhone.setCountryCode(99);
 				dummyPhone.setNationalNumber(Long.parseLong(normalized.substring(2)));
 			}
-			PhoneNumberResult wrapper = new PhoneNumberResult(normalized, dummyPhone, true);
-			return wrapper;
+			phoneNumberResultResuable.setNumber(normalized);
+			phoneNumberResultResuable.setMock(true);
+			return phoneNumberResultResuable;
 
 		}
 
-		PhoneNumberResult phoneNumberWrap = new PhoneNumberResult(normalized, null, false);
+		phoneNumberResultResuable.setNumber(normalized);
+		phoneNumberResultResuable.setMock(false);
 
 		try {
-			PhoneNumber phoneNumber = PHONE_NUMBER_UTIL.parse(PLUS_SIGN + normalized, defaultRegion);
-			phoneNumberWrap.setPhone(phoneNumber);
+			PHONE_NUMBER_UTIL.parse(PLUS_SIGN + normalized, defaultRegion, phoneNumberResultResuable.getPhone());
 		} catch (NumberParseException e) {
 			// phone = String.format("%s", phone);
 		}
-		return phoneNumberWrap;
+		return phoneNumberResultResuable;
+	}
+
+	public static PhoneNumberResult parse(String numberToParse, String defaultRegion) {
+		return parse(numberToParse, defaultRegion, new PhoneNumberResult());
 	}
 
 	public static PhoneNumberResult parse(String numberToParse) {
