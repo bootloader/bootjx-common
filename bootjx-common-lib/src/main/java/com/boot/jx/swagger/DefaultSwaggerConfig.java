@@ -197,20 +197,42 @@ public class DefaultSwaggerConfig {
 	@Autowired
 	CommonHttpRequest commonHttpRequest;
 
-	public boolean isLoggedIn() {
+	private HashBuilder getAuthTokenizer() {
 		if (!ArgUtil.is(swaggerAuthPassword)) {
+			return null;
+		}
+		return new HashBuilder().interval(300).secret(swaggerAuthPassword).message(
+				swaggerAuthUsername + commonHttpRequest.getIPAddress() + commonHttpRequest.getUserAgent().getId());
+	}
+
+	public String authenticate(HashBuilder builder) {
+		String token = null;
+		String username = commonHttpRequest.get("swagger_auth_username");
+		String password = commonHttpRequest.get("swagger_auth_password");
+		if (ArgUtil.areEqual(username, swaggerAuthUsername) && ArgUtil.areEqual(password, swaggerAuthPassword)) {
+			token = builder.toHmac().output();
+		}
+		return token;
+	}
+
+	public boolean isValidAuth() {
+		if (ArgUtil.is(this.authenticate(getAuthTokenizer()))) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean autherize() {
+		HashBuilder tokenizer = getAuthTokenizer();
+		if (tokenizer == null) {
 			return true;
 		}
 		String token = commonHttpRequest.get("swagger_auth_token");
-		HashBuilder builder = new HashBuilder().interval(300).secret(swaggerAuthPassword).message(swaggerAuthUsername);
-		if (ArgUtil.is(token) && builder.validate(token)) {
-			return true;
+		if (ArgUtil.is(token)) {
+			return tokenizer.validate(token);
 		}
-		String username = commonHttpRequest.get("swagger_auth_username");
-		String password = commonHttpRequest.get("swagger_auth_password");
-
-		if (ArgUtil.areEqual(username, swaggerAuthUsername) && ArgUtil.areEqual(password, swaggerAuthPassword)) {
-			token = builder.toHmac().output();
+		token = authenticate(tokenizer);
+		if (ArgUtil.is(token)) {
 			commonHttpRequest.setCookie(new Kooky().name("swagger_auth_token").value(token));
 			return true;
 		}

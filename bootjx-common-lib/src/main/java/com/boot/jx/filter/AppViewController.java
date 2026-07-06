@@ -38,7 +38,7 @@ public class AppViewController {
 		if (ArgUtil.is(appCommonConfig)) {
 			model.addAllAttributes(appCommonConfig.appAttributes());
 		}
-		if (defaultSwaggerConfig == null || !defaultSwaggerConfig.isLoggedIn()) {
+		if (defaultSwaggerConfig == null || !defaultSwaggerConfig.autherize()) {
 			return "swagger-login";
 		}
 		return "swagger-ui";
@@ -52,7 +52,7 @@ public class AppViewController {
 			model.addAllAttributes(appCommonConfig.appAttributes());
 		}
 
-		if (defaultSwaggerConfig == null || !defaultSwaggerConfig.isLoggedIn()) {
+		if (defaultSwaggerConfig == null || !defaultSwaggerConfig.autherize()) {
 			return "swagger-login";
 		}
 

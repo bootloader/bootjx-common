@@ -177,7 +177,7 @@ public class AppParamController {
 
 		map.put("HttpUtils.getScheme()", HttpUtils.getScheme(request));
 
-		if (defaultSwaggerConfig != null && defaultSwaggerConfig.isLoggedIn()) {
+		if (defaultSwaggerConfig != null && defaultSwaggerConfig.isValidAuth()) {
 			if (!ArgUtil.isEmpty(key)) {
 				map.put(key, prop(key));
 			}
