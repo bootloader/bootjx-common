@@ -38,6 +38,7 @@ import com.boot.jx.scope.tnt.TenantProperties;
 import com.boot.jx.scope.vendor.VendorAuthService;
 import com.boot.jx.scope.vendor.VendorContext;
 import com.boot.jx.scope.vendor.VendorContext.ApiVendorHeaders;
+import com.boot.jx.swagger.DefaultSwaggerConfig;
 import com.boot.utils.ArgUtil;
 import com.boot.utils.CryptoUtil.HashBuilder;
 import com.boot.utils.HttpUtils;
@@ -72,6 +73,9 @@ public class AppParamController {
 
 	@Autowired(required = false)
 	List<IndicatorListner> listners;
+
+	@Autowired(required = false)
+	private DefaultSwaggerConfig defaultSwaggerConfig;
 
 	@ApiRequest(type = RequestType.NO_TRACK_PING)
 	@RequestMapping(value = { PUB_AMX_PREFIX + "/ping" }, method = RequestMethod.GET)
@@ -173,8 +177,10 @@ public class AppParamController {
 
 		map.put("HttpUtils.getScheme()", HttpUtils.getScheme(request));
 
-		if (!ArgUtil.isEmpty(key)) {
-			map.put(key, prop(key));
+		if (defaultSwaggerConfig != null && defaultSwaggerConfig.isLoggedIn()) {
+			if (!ArgUtil.isEmpty(key)) {
+				map.put(key, prop(key));
+			}
 		}
 
 		ApiResponseUtil.addWarning("THis is a warning for no reason");
