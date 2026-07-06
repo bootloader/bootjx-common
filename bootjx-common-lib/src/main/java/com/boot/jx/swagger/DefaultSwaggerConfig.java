@@ -197,7 +197,7 @@ public class DefaultSwaggerConfig {
 	@Autowired
 	CommonHttpRequest commonHttpRequest;
 
-	private HashBuilder getAuthTokenizer() {
+	private HashBuilder getAuthorizer() {
 		if (!ArgUtil.is(swaggerAuthPassword)) {
 			return null;
 		}
@@ -205,34 +205,23 @@ public class DefaultSwaggerConfig {
 				swaggerAuthUsername + commonHttpRequest.getIPAddress() + commonHttpRequest.getUserAgent().getId());
 	}
 
-	public String authenticate(HashBuilder builder) {
-		String token = null;
+	public boolean authenticate() {
 		String username = commonHttpRequest.get("swagger_auth_username");
 		String password = commonHttpRequest.get("swagger_auth_password");
-		if (ArgUtil.areEqual(username, swaggerAuthUsername) && ArgUtil.areEqual(password, swaggerAuthPassword)) {
-			token = builder.toHmac().output();
-		}
-		return token;
+		return  (ArgUtil.areEqual(username, swaggerAuthUsername) && ArgUtil.areEqual(password, swaggerAuthPassword))
 	}
 
-	public boolean isValidAuth() {
-		if (ArgUtil.is(this.authenticate(getAuthTokenizer()))) {
-			return true;
-		}
-		return false;
-	}
-
-	public boolean autherize() {
-		HashBuilder tokenizer = getAuthTokenizer();
-		if (tokenizer == null) {
+	public boolean authorize() {
+		HashBuilder authorizer = getAuthorizer();
+		if (authorizer == null) {
 			return true;
 		}
 		String token = commonHttpRequest.get("swagger_auth_token");
 		if (ArgUtil.is(token)) {
-			return tokenizer.validate(token);
+			return authorizer.validate(token);
 		}
-		token = authenticate(tokenizer);
-		if (ArgUtil.is(token)) {
+		if (authenticate()) {
+			token = authorizer.toHmac().output();
 			commonHttpRequest.setCookie(new Kooky().name("swagger_auth_token").value(token));
 			return true;
 		}
