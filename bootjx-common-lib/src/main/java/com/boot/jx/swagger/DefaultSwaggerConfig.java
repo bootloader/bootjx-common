@@ -208,7 +208,7 @@ public class DefaultSwaggerConfig {
 	public boolean authenticate() {
 		String username = commonHttpRequest.get("swagger_auth_username");
 		String password = commonHttpRequest.get("swagger_auth_password");
-		return  (ArgUtil.areEqual(username, swaggerAuthUsername) && ArgUtil.areEqual(password, swaggerAuthPassword))
+		return (ArgUtil.areEqual(username, swaggerAuthUsername) && ArgUtil.areEqual(password, swaggerAuthPassword));
 	}
 
 	public boolean authorize() {
