@@ -1,6 +1,10 @@
 package com.boot.utils;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -9,6 +13,7 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 public class PhoneUtil {
 
 	private static final String DEFAULT_REGION_IN = "IN";
+	private static Logger LOGGER = LoggerFactory.getLogger(PhoneUtil.class);
 
 	public static final PhoneNumberUtil PHONE_NUMBER_UTIL = PhoneNumberUtil.getInstance();
 
@@ -178,6 +183,10 @@ public class PhoneUtil {
 		return parse(numberToParse, DEFAULT_REGION_IN);
 	}
 
+	public static PhoneNumberResult parse(String numberToParse, PhoneNumberResult phoneNumberResultResuable) {
+		return parse(numberToParse, DEFAULT_REGION_IN, new PhoneNumberResult());
+	}
+
 	public static String phone(String phoneNo) {
 		if (ArgUtil.is(phoneNo)) {
 			String phone = phoneNo.replace(" ", "").replaceAll("^[\\+0\\s]+(?!$)", "").trim();
@@ -200,6 +209,37 @@ public class PhoneUtil {
 			}
 		}
 		return phoneNo;
+	}
+
+	public static List<String> generateMockNumbers(int count) {
+		List<String> numbers = new ArrayList<>(count);
+		PhoneNumberResult result = new PhoneNumberResult();
+		int i = 0;
+		while (numbers.size() < count) {
+			String number;
+			switch (i % 3) {
+			case 0:
+				number = String.format("+1555%08d", i);
+				break;
+			case 1:
+				number = String.format("+9110000%05d", i);
+				break;
+			default:
+				number = String.format("+9990100%05d", i);
+				break;
+			}
+
+			result = PhoneUtil.parse(number, result);
+			if (result.isMock()) {
+				numbers.add(number);
+			} else {
+				LOGGER.info("[{}] {} = {} -> Mock({}) : Valid({}) ISD({}) LOCAL({})",
+						(result.isValid() || result.isMock()) ? "✔" : "✘", number, result.getNumber(), result.isMock(),
+						result.isValid(), result.getPhone().getCountryCode(), result.getPhone().getNationalNumber());
+			}
+			i++;
+		}
+		return numbers;
 	}
 
 }

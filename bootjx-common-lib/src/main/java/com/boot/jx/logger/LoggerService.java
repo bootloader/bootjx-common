@@ -62,7 +62,7 @@ public class LoggerService {
 			this.lastTime = System.currentTimeMillis();
 		}
 
-		public void log(String label) {
+		public LogTimer log(String label) {
 			long now = System.currentTimeMillis();
 			long diff = now - lastTime;
 
@@ -70,6 +70,7 @@ public class LoggerService {
 			lastTime = now;
 			if (isLocal())
 				LOGGER.info("TIMER: {} {}", label, diff);
+			return this;
 		}
 
 		public long getLastTime() {
