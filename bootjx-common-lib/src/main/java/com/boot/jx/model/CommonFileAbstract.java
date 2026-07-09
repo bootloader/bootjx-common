@@ -8,6 +8,8 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +25,7 @@ import com.boot.jx.dict.FileType;
 import com.boot.jx.logger.LoggerService;
 import com.boot.utils.ArgUtil;
 import com.boot.utils.JsonUtil;
+import com.boot.utils.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
@@ -48,6 +51,8 @@ public class CommonFileAbstract<C extends CommonFileAbstract<C>> implements Seri
 	private Map<String, Object> options = new HashMap<String, Object>();
 	private Map<String, Object> meta = new HashMap<String, Object>();
 	protected Map<String, String> headers;
+
+	protected Path tempPath;
 
 	@SuppressWarnings("unchecked")
 	public C lang(Object lang) {
@@ -267,6 +272,23 @@ public class CommonFileAbstract<C extends CommonFileAbstract<C>> implements Seri
 		return (C) this;
 	}
 
+	@SuppressWarnings("unchecked")
+	public C load(MultipartFile multipartFile) throws IOException {
+		String original = ArgUtil.parseAsString(multipartFile.getOriginalFilename());
+		this.name = FilenameUtils.getName(original);
+		this.extension = FilenameUtils.getExtension(multipartFile.getOriginalFilename());
+
+		this.contentLength = multipartFile.getSize();
+		this.contentType = multipartFile.getContentType();
+		this.fileFormat = FileFormat.from(multipartFile.getContentType());
+
+		this.tempPath = Files.createTempFile("upload-",
+				StringUtils.isEmpty(this.extension) ? ".tmp" : "." + this.extension);
+
+		multipartFile.transferTo(this.tempPath.toFile());
+		return (C) this;
+	}
+
 	public CommonFileAbstract<C> contentType(String contentType) {
 		this.fileFormat = FileFormat.from(contentType, this.fileFormat);
 		if (ArgUtil.is(this.fileFormat)) {
@@ -469,4 +491,11 @@ public class CommonFileAbstract<C extends CommonFileAbstract<C>> implements Seri
 		this.contentType = contentType;
 	}
 
+	public Path getTempPath() {
+		return tempPath;
+	}
+
+	public void setTempPath(Path tempPath) {
+		this.tempPath = tempPath;
+	}
 }

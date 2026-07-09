@@ -44,11 +44,16 @@ public class LoggerService {
 		public void setDuration(long duration) {
 			this.duration = duration;
 		}
+
+		@Override
+		public String toString() {
+			return String.format("[%s : %s ms]", this.label, this.duration);
+		}
 	}
 
 	public static class LogTimer implements Serializable {
 
-		private static final Logger LOGGER = LoggerFactory.getLogger(LogEntry.class);
+		public static final Logger LOGGER = LoggerFactory.getLogger(LogEntry.class);
 
 		public static boolean isLocal() {
 			return LOGGER.isDebugEnabled() || isLocalDebug() || false;
@@ -62,15 +67,16 @@ public class LoggerService {
 			this.lastTime = System.currentTimeMillis();
 		}
 
-		public LogTimer log(String label) {
+		public LogEntry log(String label) {
 			long now = System.currentTimeMillis();
 			long diff = now - lastTime;
 
-			logs.add(new LogEntry(label, diff));
+			LogEntry entry = new LogEntry(label, diff);
+			logs.add(entry);
 			lastTime = now;
 			if (isLocal())
 				LOGGER.info("TIMER: {} {}", label, diff);
-			return this;
+			return entry;
 		}
 
 		public long getLastTime() {
@@ -103,7 +109,7 @@ public class LoggerService {
 			StringBuilder sb = new StringBuilder();
 
 			for (LogEntry entry : this.logs) {
-				sb.append(entry.label).append(" : ").append(entry.duration).append(" ms\n");
+				sb.append(entry.toString()).append(" \n");
 			}
 
 			return sb.toString();

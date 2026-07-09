@@ -53,6 +53,10 @@ public class PhoneUtilTest { // Noncompliant
 	}
 
 	public static void generateMockNumbers() throws IOException {
+		System.out.println(LogTimer.LOGGER.getName());
+		System.out.println(LogTimer.LOGGER.isDebugEnabled());
+		System.out.println(LOGGER.isDebugEnabled());
+
 		LogTimer timer = LoggerService.getTimer();
 		List<String> numbers = PhoneUtil.generateMockNumbers(4 * 10_000);
 		Path file = Path.of("target", "test-data", "mock-numbers.txt");

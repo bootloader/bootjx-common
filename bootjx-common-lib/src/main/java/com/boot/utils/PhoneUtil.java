@@ -215,29 +215,25 @@ public class PhoneUtil {
 		List<String> numbers = new ArrayList<>(count);
 		PhoneNumberResult result = new PhoneNumberResult();
 		int i = 0;
+
+		String[] formats = { "+1555%08d", "+9110%08d", "+9990%08d" };
+
 		while (numbers.size() < count) {
 			String number;
-			switch (i % 3) {
-			case 0:
-				number = String.format("+1555%08d", i);
-				break;
-			case 1:
-				number = String.format("+9110000%05d", i);
-				break;
-			default:
-				number = String.format("+9990100%05d", i);
-				break;
+			for (String format : formats) {
+				number = String.format(format, i);
+				result = PhoneUtil.parse(number, result);
+				if (result.isMock()) {
+					numbers.add(number);
+					i++;
+				} else {
+					LOGGER.info("[{}] {} = {} -> Mock({}) : Valid({}) ISD({}) LOCAL({})",
+							(result.isValid() || result.isMock()) ? "✔" : "✘", number, result.getNumber(),
+							result.isMock(), result.isValid(), result.getPhone().getCountryCode(),
+							result.getPhone().getNationalNumber());
+				}
 			}
 
-			result = PhoneUtil.parse(number, result);
-			if (result.isMock()) {
-				numbers.add(number);
-			} else {
-				LOGGER.info("[{}] {} = {} -> Mock({}) : Valid({}) ISD({}) LOCAL({})",
-						(result.isValid() || result.isMock()) ? "✔" : "✘", number, result.getNumber(), result.isMock(),
-						result.isValid(), result.getPhone().getCountryCode(), result.getPhone().getNationalNumber());
-			}
-			i++;
 		}
 		return numbers;
 	}
