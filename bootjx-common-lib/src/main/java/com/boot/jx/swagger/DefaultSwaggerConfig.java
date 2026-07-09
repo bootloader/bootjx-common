@@ -217,8 +217,8 @@ public class DefaultSwaggerConfig {
 			return true;
 		}
 		String token = commonHttpRequest.get("swagger_auth_token");
-		if (ArgUtil.is(token)) {
-			return authorizer.validate(token);
+		if (ArgUtil.is(token) && authorizer.validate(token)) {
+			return true;
 		}
 		if (authenticate()) {
 			token = authorizer.toHmac().output();
