@@ -58,7 +58,7 @@ public class PhoneUtilTest { // Noncompliant
 		System.out.println(LOGGER.isDebugEnabled());
 
 		LogTimer timer = LoggerService.getTimer();
-		List<String> numbers = PhoneUtil.generateMockNumbers(4 * 10_000);
+		List<String> numbers = PhoneUtil.generateMockNumbers(10 * 10_000);
 		Path file = Path.of("target", "test-data", "mock-numbers.txt");
 		Files.createDirectories(file.getParent());
 		Files.write(file, numbers, StandardCharsets.UTF_8);

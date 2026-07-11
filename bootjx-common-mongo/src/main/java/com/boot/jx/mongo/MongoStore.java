@@ -532,4 +532,8 @@ public class MongoStore implements CommonMongoOperations {
 		return db().getPages(query);
 	}
 
+	public void log(Object copyOfDocument, String activity) {
+		db().log(copyOfDocument, activity);
+	}
+
 }

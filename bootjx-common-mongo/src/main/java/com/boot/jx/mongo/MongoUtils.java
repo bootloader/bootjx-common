@@ -13,6 +13,7 @@ import org.bson.Document;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 import com.boot.jx.mongo.CommonDocInterfaces.IMongoQueryBuilder;
 import com.boot.jx.mongo.CommonMongoQB.MQB;
@@ -86,6 +87,7 @@ public class MongoUtils {
 		protected MongoIterable<T> iterableResults;
 		private List<T> results;
 		private MongoQueryBuilder<T> qb;
+		protected int batchSize;
 
 		public MongoCollection<Document> collection() {
 			if (this.col == null) {
@@ -171,6 +173,30 @@ public class MongoUtils {
 			return this;
 		}
 
+		public MongoResultProcessor<T> batchSize(int batchSize) {
+			this.batchSize = batchSize;
+			return this;
+		}
+
+		private <TResult> MongoResultProcessor<TResult> projection(MongoResultProcessor<TResult> newP,
+				Query proectionQuery, Class<TResult> resultClass) {
+			Document filter = proectionQuery.getQueryObject();
+			Document projection = proectionQuery.getFieldsObject();
+			Document sort = proectionQuery.getSortObject();
+			return newP.results(collection().find(filter, resultClass).projection(projection).sort(sort));
+		}
+
+		public <TResult> MongoResultProcessor<TResult> projection(Query proectionQuery, Class<TResult> resultClass) {
+			MongoResultProcessor<TResult> newP = new MongoResultProcessor<TResult>();
+			return projection(newP, proectionQuery, resultClass);
+		}
+
+		public MongoResultProcessor<Document> projection(Query proectionQuery) {
+			MongoResultProcessor<Document> newP = new SimpleMongoResultProcessor().using(mongoTemplate)
+					.collection(collection);
+			return projection(newP, proectionQuery, Document.class);
+		}
+
 		public <TResult> MongoResultProcessor<TResult> aggregate(List<Document> aggreQuery,
 				Class<TResult> resultClass) {
 			MongoResultProcessor<TResult> newP = new MongoResultProcessor<TResult>();
@@ -178,7 +204,8 @@ public class MongoUtils {
 		}
 
 		public MongoResultProcessor<Document> aggregate(List<Document> aggreQuery) {
-			SimpleMongoResultProcessor newP = new SimpleMongoResultProcessor();
+			MongoResultProcessor<Document> newP = new SimpleMongoResultProcessor().using(mongoTemplate)
+					.collection(collection);
 			return newP.results(collection().aggregate(aggreQuery));
 		}
 
@@ -210,13 +237,15 @@ public class MongoUtils {
 		}
 
 		public List<T> asList(List<T> list) {
-			MongoCursor<T> cursor = this.iterableResults.iterator();
+			MongoIterable<T> thisIterator = this.iterableResults;
+			if (this.batchSize > 0)
+				thisIterator = thisIterator.batchSize(batchSize);
+			MongoCursor<T> cursor = thisIterator.iterator();
 			while (cursor.hasNext()) {
 				T object = cursor.next();
 				if (ArgUtil.is(object)) {
 					list.add(object);
 				}
-
 			}
 			return list;
 		}
@@ -226,6 +255,22 @@ public class MongoUtils {
 				return asList(new LinkedList<T>());
 			}
 			return this.results;
+		}
+
+		public <TResult> List<TResult> asList(Class<TResult> clazz) {
+			MongoIterable<T> thisIterator = this.iterableResults;
+			if (this.batchSize > 0)
+				thisIterator = thisIterator.batchSize(batchSize);
+			MongoCursor<T> cursor = thisIterator.iterator();
+			List<TResult> res = new LinkedList<TResult>();
+			while (cursor.hasNext()) {
+				T object = cursor.next();
+				if (ArgUtil.is(object)) {
+					// TResult doc = JsonUtil.parse(object, clazz);
+					// res.add(doc);
+				}
+			}
+			return res;
 		}
 
 		public T asFirst() {
@@ -243,7 +288,21 @@ public class MongoUtils {
 	}
 
 	public static class SimpleMongoResultProcessor extends MongoResultProcessor<Document> {
-
+		public <TResult> List<TResult> asList(Class<TResult> clazz) {
+			MongoIterable<Document> thisIterator = this.iterableResults;
+			if (this.batchSize > 0)
+				thisIterator = thisIterator.batchSize(batchSize);
+			MongoCursor<Document> cursor = thisIterator.iterator();
+			List<TResult> res = new LinkedList<TResult>();
+			while (cursor.hasNext()) {
+				Document object = cursor.next();
+				if (ArgUtil.is(object)) {
+					TResult doc = mongoTemplate.getConverter().read(clazz, object);
+					res.add(doc);
+				}
+			}
+			return res;
+		}
 	}
 
 	public static List<String> cleanupIndexes(CommonMongoTemplateDefault mongoTemplate, String collectionName,

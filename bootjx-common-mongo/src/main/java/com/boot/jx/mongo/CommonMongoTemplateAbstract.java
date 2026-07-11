@@ -36,6 +36,7 @@ import com.boot.jx.mongo.CommonDocInterfaces.TimeStampIndex.UpdatedTimeStampInde
 import com.boot.jx.mongo.CommonMongoQueryBuilder.DocQueryBuilder;
 import com.boot.jx.mongo.CommonMongoQueryBuilder.SimpleDocQueryBuilder;
 import com.boot.jx.mongo.MongoUtils.MongoResultProcessor;
+import com.boot.jx.mongo.MongoUtils.SimpleMongoResultProcessor;
 import com.boot.model.TimeModels.TimeStampCreatedSupport;
 import com.boot.model.TimeModels.TimeStampUpdatedSupport;
 import com.boot.utils.ArgUtil;
@@ -83,7 +84,7 @@ public class CommonMongoTemplateAbstract<TStore extends CommonMongoTemplateAbstr
 	}
 
 	public MongoResultProcessor<Document> collection(String collection) {
-		return new MongoResultProcessor<Document>().using(this).collection(collection);
+		return new SimpleMongoResultProcessor().using(this).collection(collection);
 	}
 
 	public <TResult> MongoResultProcessor<TResult> collection(String collection, Class<TResult> clazz) {
