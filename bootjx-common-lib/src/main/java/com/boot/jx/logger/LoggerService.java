@@ -75,7 +75,7 @@ public class LoggerService {
 			logs.add(entry);
 			lastTime = now;
 			if (isLocal())
-				LOGGER.info("TIMER: {} {}", label, diff);
+				LOGGER.info("TIMER: {} {} ms", label, diff);
 			return entry;
 		}
 
