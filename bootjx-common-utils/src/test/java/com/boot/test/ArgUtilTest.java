@@ -1,83 +1,203 @@
 package com.boot.test;
 
-import java.text.ParseException;
-import java.util.regex.Pattern;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+
+import org.junit.Test;
 
 import com.boot.utils.ArgUtil;
-import com.boot.utils.StringUtils.StringMatcher;
+import com.boot.utils.ArgUtil.EnumById;
+import com.boot.utils.Constants;
+import com.boot.utils.EnumType;
 
-public class ArgUtilTest { // Noncompliant
+/**
+ * Regression coverage for {@link ArgUtil} — the most-referenced utility in the
+ * codebase (~180+ files). Pins parsing, emptiness, equality, and coercion
+ * behavior that must stay stable across Java/Jackson/Spring upgrades.
+ */
+public class ArgUtilTest {
 
-	public static final Pattern pattern = Pattern.compile("index:\\ ([a-zA-Z0-9_]+)\\ dup key");
-	public static final Pattern pattern2 = Pattern.compile(
-			"duplicate key error collection: [a-zA-Z0-9_\\.]+ index:\\ ([a-zA-Z0-9_]+)('; nested exception|\\ dup\\ key)");
+	public enum PlainStatus implements EnumType {
+		ACTIVE, INACTIVE
+	}
 
-	public static final Pattern PROXY = Pattern.compile("\\/proxy\\ ([a-zA-Z0-9_\\-]+)$");
+	public enum ClientCode implements EnumById {
+		AMX("AM"), CBS("CB");
 
-	public static void main(String[] args) throws ParseException {
-		boolean x = true, y = true, z = false, w = false;
-		checkAssert("=====true", ArgUtil.is(x, y), true);
-		checkAssert("=====true", ArgUtil.is(x, z), false);
-		checkAssert("=====true", ArgUtil.is(z, w), true);
+		private final String id;
+
+		ClientCode(String id) {
+			this.id = id;
+		}
+
+		@Override
+		public String getId() {
+			return id;
+		}
+	}
+
+	@Test
+	public void is_and_isEmpty_handleNullBlankAndCollections() {
+		assertTrue(ArgUtil.isEmpty(null));
+		assertTrue(ArgUtil.isEmpty(""));
+		assertTrue(ArgUtil.isEmpty("   "));
+		assertFalse(ArgUtil.isEmpty("x"));
+		assertTrue(ArgUtil.isEmpty(Collections.emptyList()));
+		assertTrue(ArgUtil.is("hello"));
+		assertTrue(ArgUtil.blank(null));
+		assertTrue(ArgUtil.isNotEmpty("a"));
+	}
+
+	@Test
+	public void isEmptyValue_treatsZeroAndFalseAsEmpty() {
+		assertTrue(ArgUtil.isEmptyValue(null));
+		assertTrue(ArgUtil.isEmptyValue(0));
+		assertTrue(ArgUtil.isEmptyValue(0L));
+		assertTrue(ArgUtil.isEmptyValue(false));
+		assertTrue(ArgUtil.isEmptyValue(Boolean.FALSE));
+		assertTrue(ArgUtil.isEmptyValue(""));
+		assertFalse(ArgUtil.isEmptyValue(3));
+		assertFalse(ArgUtil.isEmptyValue("3"));
+		assertFalse(ArgUtil.isEmptyValue("0"));
+	}
+
+	@Test
+	public void is_withMultipleBooleans_followsAllTrueRule() {
+		assertTrue(ArgUtil.is(true, true));
+		assertFalse(ArgUtil.is(true, false));
+		assertTrue(ArgUtil.is(false, false));
 		Boolean X = false, Y = false;
-		checkAssert("=====true", ArgUtil.is(X, Y), true);
+		assertTrue(ArgUtil.is(X, Y));
 	}
 
-	public static void main6(String[] args) throws ParseException {
-		System.out.println(ArgUtil.any("e".equals("v"), "e".equals("e")));
-		System.out.println("- " + ArgUtil.anyOf(true, 5));
+	@Test
+	public void isEqual_comparesNullableValues() {
+		assertFalse(ArgUtil.isEqual(null));
+		assertTrue(ArgUtil.isEqual(null, null));
+		assertFalse(ArgUtil.isEqual("", null, null));
+		assertTrue(ArgUtil.isEqual(null, "", null));
+		assertTrue(ArgUtil.isEqual(null, "x", null));
+		assertTrue(ArgUtil.isEqual("a", "a", "b"));
+		assertFalse(ArgUtil.isEqual("a", "b"));
 	}
 
-	public static void main5(String[] args) throws ParseException {
-		String x = "/proxy aert$rip-a";
+	@Test
+	public void areEqual_and_equals_matchExpectedSemantics() {
+		assertTrue(ArgUtil.areEqual("a", "a"));
+		assertFalse(ArgUtil.areEqual("a", "b"));
+		assertTrue(ArgUtil.equalsIgnoreCase("AbC", "abc"));
+	}
 
-		StringMatcher matcher = new StringMatcher(x);
-		if (matcher.isMatch(PROXY)) {
-			System.out.println(matcher.group(1));
-		} else {
-			System.out.println("ss");
+	@Test
+	public void parseAsBoolean_supportsBooleanNumberAndString() {
+		assertEquals(Boolean.TRUE, ArgUtil.parseAsBoolean(true));
+		assertEquals(Boolean.FALSE, ArgUtil.parseAsBoolean(0));
+		assertEquals(Boolean.TRUE, ArgUtil.parseAsBoolean(1));
+		assertEquals(Boolean.TRUE, ArgUtil.parseAsBoolean("true"));
+		assertEquals(Boolean.FALSE, ArgUtil.parseAsBoolean("FALSE"));
+		assertEquals(Boolean.FALSE, ArgUtil.parseAsBoolean("maybe"));
+		assertEquals(Boolean.TRUE, ArgUtil.parseAsBoolean(null, true));
+	}
+
+	@Test
+	public void parseAsInteger_and_parseAsLong_handleNumbersAndStrings() {
+		assertEquals(Integer.valueOf(42), ArgUtil.parseAsInteger(42));
+		assertEquals(Integer.valueOf(42), ArgUtil.parseAsInteger("42"));
+		assertEquals(Integer.valueOf(7), ArgUtil.parseAsInteger("7", 0));
+		assertEquals(Long.valueOf(99L), ArgUtil.parseAsLong("99"));
+		assertEquals(Long.valueOf(0L), ArgUtil.parseAsLongOrZero(null));
+	}
+
+	@Test
+	public void parseAsBigDecimal_and_parseAsDouble_parseNumericStrings() {
+		assertEquals(new BigDecimal("10.5"), ArgUtil.parseAsBigDecimal("10.5"));
+		assertEquals(new BigDecimal("1.00"), ArgUtil.parseAsBigDecimal("1.00", BigDecimal.ZERO));
+		assertEquals(Double.valueOf(3.14), ArgUtil.parseAsDouble("3.14"));
+	}
+
+	@Test
+	public void parseAsString_handlesNullAndDefaults() {
+		assertEquals("hello", ArgUtil.parseAsString("hello"));
+		assertNull(ArgUtil.parseAsString(null));
+		assertEquals("def", ArgUtil.parseAsString(null, "def"));
+		assertEquals("keep", ArgUtil.parseAsStringNull("keep", "def"));
+	}
+
+	@Test
+	public void parseAsEnumIgnoreCase_resolvesEnumConstants() {
+		assertEquals(PlainStatus.ACTIVE, ArgUtil.parseAsEnumIgnoreCase("active", PlainStatus.class));
+		assertEquals(PlainStatus.INACTIVE, ArgUtil.parseAsEnumIgnoreCase("INACTIVE", PlainStatus.class));
+	}
+
+	@Test
+	public void getType_reportsKnownTypes() {
+		assertEquals("string", ArgUtil.getType("x"));
+		assertEquals("integer", ArgUtil.getType(1));
+		assertEquals("long", ArgUtil.getType(1L));
+		assertEquals("double", ArgUtil.getType(1.1));
+		assertEquals("boolean", ArgUtil.getType(true));
+		assertEquals("date", ArgUtil.getType(new Date()));
+		assertEquals("object", ArgUtil.getType(Constants.EMPTY_MAP));
+	}
+
+	@Test
+	public void getTypeEnum_listsLowercaseIdsForEnumById() {
+		String[] ids = ArgUtil.getTypeEnum(ClientCode.AMX);
+		assertArrayEquals(new String[] { "am", "cb" }, ids);
+	}
+
+	@Test
+	public void any_all_none_nand_booleanVarargs() {
+		assertTrue(ArgUtil.any(false, true));
+		assertFalse(ArgUtil.any(false, false));
+		assertTrue(ArgUtil.all(true, true));
+		assertFalse(ArgUtil.all(true, false));
+		assertTrue(ArgUtil.none(false, false));
+		assertTrue(ArgUtil.nand(true, false));
+		assertFalse(ArgUtil.nand(true, true));
+	}
+
+	@Test
+	public void nonEmpty_and_anyOf_returnFirstPresentValue() {
+		assertEquals("a", ArgUtil.nonEmpty(null, "a"));
+		assertEquals("b", ArgUtil.anyOf(null, "b"));
+		assertEquals("c", ArgUtil.ifNotEmpty("", "c"));
+		assertEquals("d", ArgUtil.assignDefaultIfNull(null, "d"));
+	}
+
+	@Test
+	public void presentIn_and_is_checksMembership() {
+		assertTrue(ArgUtil.presentIn("a", "x", "a", "b"));
+		assertTrue(ArgUtil.is("z", "z"));
+		assertFalse(ArgUtil.is("z", "y"));
+	}
+
+	@Test
+	public void parseAsT_coercesUsingDefaultValueType() {
+		assertEquals(Integer.valueOf(5), ArgUtil.parseAsT("5", 0, false));
+		assertEquals("123", ArgUtil.parseAsT(123, "txt", false));
+	}
+
+	@Test
+	public void constructor_isBlockedForThisStaticUtilityClass() throws Exception {
+		Constructor<ArgUtil> constructor = ArgUtil.class.getDeclaredConstructor();
+		constructor.setAccessible(true);
+		try {
+			constructor.newInstance();
+			fail("Expected IllegalStateException");
+		} catch (InvocationTargetException e) {
+			assertTrue(e.getCause() instanceof IllegalStateException);
 		}
-
 	}
-
-	public static void main4(String[] args) throws ParseException {
-		String x = "Write failed with error code 11000 and error message 'E11000 duplicate key error collection: localbot.AGENTS index: agent_email dup key: { : \"lalit.tanwar.cherrybase@gmail.com\" }'; nested exception is com.mongodb.DuplicateKeyException: Write failed with error code 11000 and error message 'E11000 duplicate key error collection: localbot.AGENTS index: agent_email dup key: { : \"lalit.tanwar.cherrybase@gmail.com\" }'";
-		String x2 = "Write failed with error code 11000 and error message 'E11000 duplicate key error collection: CONFIG_CLIENT_KEY index: keyName'; nested exception is com.mongodb.DuplicateKeyException: Write failed with error code 11000 and error message 'E11000 duplicate key error collection: CONFIG_CLIENT_KEY index: keyName'";
-		StringMatcher matcher = new StringMatcher(x2);
-		if (matcher.isMatch(pattern2)) {
-			System.out.println(matcher.group(1));
-		} else {
-			System.out.println("ss");
-		}
-
-	}
-
-	public static void main3(String[] args) throws ParseException {
-		checkAssert("=====true", ArgUtil.isEqual(null), false);
-		checkAssert("=====true", ArgUtil.isEqual(null, null), true);
-		checkAssert("=====false", ArgUtil.isEqual("", null, null), false);
-		checkAssert("=====false", ArgUtil.isEqual(null, "", null), true);
-		checkAssert("=====false", ArgUtil.isEqual(null, "x", null), true);
-	}
-
-	public static void main2(String[] args) throws ParseException {
-		checkAssert("=====true", ArgUtil.isEmptyValue(0), true);
-		checkAssert("=====false", ArgUtil.isEmptyValue(0L), true);
-		checkAssert("=====null", ArgUtil.isEmptyValue(null), true);
-		checkAssert("=====null", ArgUtil.isEmptyValue(""), true);
-		checkAssert("=====null", ArgUtil.isEmptyValue(3), false);
-		checkAssert("=====null", ArgUtil.isEmptyValue("3"), false);
-		checkAssert("=====null", ArgUtil.isEmptyValue("0"), false);
-		checkAssert("=====null", ArgUtil.isEmptyValue(false), true);
-		checkAssert("=====null", ArgUtil.isEmptyValue(Boolean.FALSE), true);
-	}
-
-	public static void checkAssert(String name, Object a, Object b) throws ParseException {
-		if (ArgUtil.areEqual(a, b)) {
-			System.out.println(name + " : PASS");
-		} else {
-			System.out.println(name + " : FAIL");
-		}
-	}
-
 }
