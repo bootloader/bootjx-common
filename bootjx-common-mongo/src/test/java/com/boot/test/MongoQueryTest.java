@@ -22,6 +22,7 @@ import com.boot.model.MapModel;
 import com.boot.utils.ArgUtil;
 import com.boot.utils.CollectionUtil;
 import com.boot.utils.JsonUtil;
+import com.boot.utils.PatternUtil;
 
 public class MongoQueryTest { // Noncompliant
 
@@ -127,7 +128,7 @@ public class MongoQueryTest { // Noncompliant
 
 	public static void main2(String[] args) throws ParseException, IOException {
 		MongoQueryBuilder<MongoQueryTest> qa = CommonMongoQueryBuilder.collection(MongoQueryTest.class)
-				.where(Criteria.where("category").regex("^test$", "i"));
+				.where(Criteria.where("category").regex(PatternUtil.toPattern("^test$", "i")));
 		System.out.println(qa.query().toString());
 
 	}

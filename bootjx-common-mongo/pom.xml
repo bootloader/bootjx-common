@@ -33,6 +33,22 @@
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
 
+		<!-- spring-boot-starter-data-mongodb's own mongodb-driver dependency is
+			excluded (see bootjx-common/pom.xml dependencyManagement); depend on
+			the 4.11.x replacement artifacts explicitly instead: mongodb-driver-sync
+			for the modern com.mongodb.client API used across this module, and
+			mongodb-driver-legacy for com.mongodb.MongoClient/MongoClientOptions/
+			MongoClientURI/BasicDBObject/DBObject still used here and by Spring
+			Data MongoDB's SimpleMongoDbFactory. -->
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-legacy</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

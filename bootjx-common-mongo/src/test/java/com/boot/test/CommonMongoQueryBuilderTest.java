@@ -16,6 +16,7 @@ import com.boot.jx.mongo.CommonMongoQueryBuilder;
 import com.boot.jx.mongo.QA;
 import com.boot.utils.CollectionUtil;
 import com.boot.utils.JsonUtil;
+import com.boot.utils.PatternUtil;
 
 /**
  * Regression coverage for Mongo query/update builders — pins BSON generation
@@ -50,8 +51,14 @@ public class CommonMongoQueryBuilderTest {
 
 	@Test
 	public void mongoQueryBuilder_buildsRegexCriteriaQuery() {
+		// Criteria.regex(String, String) reaches into org.bson.BSON.regexFlags(),
+		// which the driver made package-private starting with 4.0 (see
+		// bootjx-common/pom.xml). PatternUtil.toPattern() reimplements that flag
+		// parsing so callers can keep using the safe Criteria.regex(Pattern)
+		// overload across the driver upgrade.
 		MongoQueryBuilder<CommonMongoQueryBuilderTest> qa = CommonMongoQueryBuilder
-				.collection(CommonMongoQueryBuilderTest.class).where(Criteria.where("category").regex("^test$", "i"));
+				.collection(CommonMongoQueryBuilderTest.class)
+				.where(Criteria.where("category").regex(PatternUtil.toPattern("^test$", "i")));
 		String query = qa.query().toString();
 		assertTrue(query.contains("category"));
 		assertTrue(query.contains("test"));

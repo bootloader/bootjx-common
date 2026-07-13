@@ -27,6 +27,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
 		<boot.jx.version>2.0.3-SNAPSHOT</boot.jx.version>
+		<!-- Mongo Java driver line. 4.x+ no longer publishes the "mongodb-driver"
+			uber-jar (see exclusion + explicit mongodb-driver-sync/-legacy deps
+			below); bumped off the Spring Boot 2.0.5 BOM's 3.6.4 which cannot
+			speak MongoDB 8.1+'s auth handshake and is EOL. -->
+		<mongodb.driver.version>4.11.5</mongodb.driver.version>
 	</properties>
 
 	<dependencyManagement>
@@ -39,25 +44,53 @@
 				<version>4.5.14</version>
 			</dependency>
 
-			<!-- Pin past the Spring Boot 2.0.5 BOM's 3.6.4: last release of the
-				legacy 3.x driver line (com.mongodb.MongoClient API unchanged since
-				3.0), tested through MongoDB 4.4 and functional in compatibility
-				mode up to MongoDB 8.0. Mandatory bump to 4.x/5.x before MongoDB
-				8.1+ (auth handshake change breaks 3.x) or before Java 17+. -->
+			<!-- Mongo Java driver 4.11.x: overrides the Spring Boot 2.0.5 BOM's
+				3.6.4 (org.mongodb:mongodb-driver). Since driver 4.0, the
+				"mongodb-driver" uber-jar is no longer published on Maven Central
+				- applications must depend on mongodb-driver-sync (modern
+				com.mongodb.client API, used throughout this codebase) and/or
+				mongodb-driver-legacy (com.mongodb.MongoClient/DB/DBObject/
+				BasicDBObject, still required by Spring Data MongoDB 2.0.x's
+				SimpleMongoDbFactory and by a few BasicDBObject/DBObject usages
+				here) directly. The old "mongodb-driver" dependency that
+				spring-boot-starter-data-mongodb still pulls in is excluded below
+				so it can't collide on the classpath with these. -->
 			<dependency>
 				<groupId>org.mongodb</groupId>
-				<artifactId>mongodb-driver</artifactId>
-				<version>3.12.14</version>
+				<artifactId>bson</artifactId>
+				<version>${mongodb.driver.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mongodb</groupId>
 				<artifactId>mongodb-driver-core</artifactId>
-				<version>3.12.14</version>
+				<version>${mongodb.driver.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mongodb</groupId>
-				<artifactId>bson</artifactId>
-				<version>3.12.14</version>
+				<artifactId>mongodb-driver-sync</artifactId>
+				<version>${mongodb.driver.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mongodb</groupId>
+				<artifactId>mongodb-driver-legacy</artifactId>
+				<version>${mongodb.driver.version}</version>
+			</dependency>
+
+			<!-- spring-boot-starter-data-mongodb (2.0.5.RELEASE) directly depends
+				on the discontinued org.mongodb:mongodb-driver uber-jar; exclude it
+				here so every module that pulls in the starter (bootjx-common-mongo,
+				common-lib-session) gets the exclusion for free instead of having to
+				repeat it locally. -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-data-mongodb</artifactId>
+				<version>2.0.5.RELEASE</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.mongodb</groupId>
+						<artifactId>mongodb-driver</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 			<!-- Below: explicit pins for versions otherwise inherited only from the
