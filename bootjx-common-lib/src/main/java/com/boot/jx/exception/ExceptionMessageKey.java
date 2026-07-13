@@ -64,7 +64,7 @@ public class ExceptionMessageKey extends Dnum<ExceptionMessageKey> implements IM
 
 	public static String build(String exceptionEnumString, Object... values) {
 		final String DELIM = ":";
-		StringBuffer sbuf = new StringBuffer();
+		StringBuilder sbuf = new StringBuilder();
 		sbuf.append(exceptionEnumString).append(DELIM);
 		for (int i = 0; i < values.length; i++) {
 			if (i == (values.length - 1)) {

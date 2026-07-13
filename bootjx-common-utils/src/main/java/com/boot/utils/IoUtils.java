@@ -173,7 +173,7 @@ public class IoUtils {
 	// Clob to string
 	public static String clobStringConversion(Clob clb)
 	{
-		StringBuffer str = new StringBuffer();
+		StringBuilder str = new StringBuilder();
 		String strng;
 
 		BufferedReader bufferRead;

@@ -20,7 +20,7 @@ public class Kooky implements Serializable {
 	private String sameSite;
 
 	public String toString() {
-		StringBuffer s = new StringBuffer();
+		StringBuilder s = new StringBuilder();
 
 		s.append(name + "=" + value);
 
