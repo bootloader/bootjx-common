@@ -39,6 +39,27 @@
 				<version>4.5.14</version>
 			</dependency>
 
+			<!-- Pin past the Spring Boot 2.0.5 BOM's 3.6.4: last release of the
+				legacy 3.x driver line (com.mongodb.MongoClient API unchanged since
+				3.0), tested through MongoDB 4.4 and functional in compatibility
+				mode up to MongoDB 8.0. Mandatory bump to 4.x/5.x before MongoDB
+				8.1+ (auth handshake change breaks 3.x) or before Java 17+. -->
+			<dependency>
+				<groupId>org.mongodb</groupId>
+				<artifactId>mongodb-driver</artifactId>
+				<version>3.12.14</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mongodb</groupId>
+				<artifactId>mongodb-driver-core</artifactId>
+				<version>3.12.14</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mongodb</groupId>
+				<artifactId>bson</artifactId>
+				<version>3.12.14</version>
+			</dependency>
+
 			<!-- Below: explicit pins for versions otherwise inherited only from the
 				Spring Boot 2.0.5 BOM (jackson-bom 2.9.6, slf4j 1.7.25, logback 1.2.3,
 				junit 4.12). Same resolved versions as today - no behavior change -
