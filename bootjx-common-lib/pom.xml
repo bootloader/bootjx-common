@@ -97,12 +97,6 @@
 			<version>${jasypt.spring.version}</version>
 		</dependency> 
 		
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.5</version>
-		</dependency>
-
 		<!-- org.apache.commons.lang.* call sites migrated to lang3; version
 			inherited from the Spring Boot 2.0.5 BOM (3.7). -->
 		<dependency>
