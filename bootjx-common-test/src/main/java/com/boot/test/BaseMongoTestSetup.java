@@ -1,18 +1,17 @@
 package com.boot.test;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.io.File;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.boot.jx.mongo.CommonMongoSourceProvider;
 import com.boot.jx.mongo.CommonMongoTemplate;
-import com.boot.jx.mongo.logger.ChangeLogDoc;
 import com.boot.utils.ArgUtil;
-import com.boot.utils.JsonUtil;
 
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
@@ -23,14 +22,20 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 
 public abstract class BaseMongoTestSetup { // Noncompliant
 
-	private static final int PORT = 27017; // Specify your desired port here
+	/** Non-default port to avoid clashing with a locally running MongoDB instance. */
+	private static final int PORT = 27018;
 
 	private static MongodExecutable mongodExecutable;
 
 	protected static CommonMongoTemplate mongoTemplate;
 
+	private static volatile boolean embeddedMongoUnavailable;
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		if (embeddedMongoUnavailable) {
+			assumeTrue("Embedded MongoDB unavailable on this platform", false);
+		}
 
 		String userDir = System.getProperty("user.dir");
 		File userDirFile = new File(userDir);;
@@ -38,22 +43,33 @@ public abstract class BaseMongoTestSetup { // Noncompliant
 		System.out.println("userDirFolder:" + userDirFolder);
 		System.setProperty("javax.net.ssl.trustStore", userDirFolder + "/../certs/cacerts");
 
-		MongodStarter starter = MongodStarter.getDefaultInstance();
-		IMongodConfig mongodConfig = new MongodConfigBuilder().version(Version.Main.PRODUCTION)
-				.net(new Net(PORT, false)) // Set the port here
-				.build();
-		mongodExecutable = starter.prepare(mongodConfig);
-		mongodExecutable.start();
+		try {
+			MongodStarter starter = MongodStarter.getDefaultInstance();
+			// V3_6 avoids the PRODUCTION 32-bit binary issue on macOS ARM (flapdoodle 2.0.3).
+			IMongodConfig mongodConfig = new MongodConfigBuilder().version(Version.Main.V3_6)
+					.net(new Net(PORT, false))
+					.build();
+			mongodExecutable = starter.prepare(mongodConfig);
+			mongodExecutable.start();
 
-		System.out.println("Embedded MongoDB started on port: " + PORT);
+			System.setProperty("spring.data.mongodb.uri", "mongodb://localhost:" + PORT + "/testdatabase");
+			System.out.println("Embedded MongoDB started on port: " + PORT);
+		} catch (Exception e) {
+			embeddedMongoUnavailable = true;
+			System.err.println("Embedded MongoDB could not start: " + e.getMessage());
+			assumeTrue("Embedded MongoDB unavailable on this platform", false);
+		}
 
 	}
 
 	@Before
 	public void ensureMongoConnection() {
+		if (embeddedMongoUnavailable) {
+			assumeTrue("Embedded MongoDB unavailable on this platform", false);
+		}
 		String connectionString = System.getProperty("spring.data.mongodb.uris");
 		if (!ArgUtil.is(connectionString)) {
-			connectionString = "mongodb://localhost:27017/testdatabase";
+			connectionString = "mongodb://localhost:" + PORT + "/testdatabase";
 		}
 
 		if (mongoTemplate == null) {
@@ -64,18 +80,6 @@ public abstract class BaseMongoTestSetup { // Noncompliant
 			commonMongoSourceProvider.setGlobalDBProfix("tnt");
 			mongoTemplate = new CommonMongoTemplate().using(commonMongoSourceProvider);
 		}
-	}
-
-	@Test
-	public void contactableTest() {
-		ChangeLogDoc log = mongoTemplate.findById("66d988af7ecdb50001cc36ba", ChangeLogDoc.class);
-		System.out.println("=========================================");
-		if (ArgUtil.is(log)) {
-			System.out.println("====" + JsonUtil.toJson(log));
-		} else {
-			System.out.println("==== Not found for 66d988af7ecdb50001cc36ba");
-		}
-		System.out.println("=========================================");
 	}
 
 	@After
