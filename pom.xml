@@ -31,6 +31,13 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Pin past the Spring Boot 2.0.5 BOM's 4.5.6: last patch of the 4.5.x
+				line, pure bugfixes, zero API change. -->
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>4.5.14</version>
+			</dependency>
 			<dependency>
 				<groupId>com.boot.jx</groupId>
 				<artifactId>bootjx-extjar</artifactId>
