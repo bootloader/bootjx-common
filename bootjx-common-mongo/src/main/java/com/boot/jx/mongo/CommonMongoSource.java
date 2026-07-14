@@ -5,9 +5,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
+import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.mongodb.core.convert.DbRefResolver;
 import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
@@ -19,10 +19,11 @@ import com.boot.jx.http.CommonHttpRequest.ApiRequestDetail;
 import com.boot.jx.scope.tnt.Tenants;
 import com.boot.utils.ArgUtil;
 import com.boot.utils.StringUtils;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoClientURI;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.ReadPreference;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 
 public class CommonMongoSource {
 
@@ -38,7 +39,7 @@ public class CommonMongoSource {
 
 	public static class MongoClientHolder {
 		MongoClient client;
-		MongoClientURI uri;
+		ConnectionString uri;
 	}
 
 	private static final ConcurrentHashMap<String, MongoClientHolder> CLIENTS = new ConcurrentHashMap<>();
@@ -73,15 +74,15 @@ public class CommonMongoSource {
 //	private static MongoClient sharedMongoClient;
 
 	private static Object lock = new Object();
-	MongoDbFactory mongoDbFactory;
+	MongoDatabaseFactory mongoDbFactory;
 	MongoTemplate mongoTemplate;
 
 	private static Object lockNoDb = new Object();
-	static MongoDbFactory mongoDbFactoryNoDb;
+	static MongoDatabaseFactory mongoDbFactoryNoDb;
 	static MongoTemplate mongoTemplateNoDb;
 
 	private static Object lockDefault = new Object();
-	static MongoDbFactory mongoDbFactoryDefault;
+	static MongoDatabaseFactory mongoDbFactoryDefault;
 	static MongoTemplate mongoTemplateDefault;
 
 	private boolean readPreferenceSecondary;
@@ -107,18 +108,18 @@ public class CommonMongoSource {
 		return hasRule(READ_ONLY_DB);
 	}
 
-	private MongoDbFactory mongoDbFactory(String dataSourceUrl, USE_DB useDb) {
+	private MongoDatabaseFactory mongoDbFactory(String dataSourceUrl, USE_DB useDb) {
 		String tnt = tenant;
 		String dbtnt = tenantDB;
 
 		MongoClientHolder clientHolder = CLIENTS.computeIfAbsent(name, key -> {
 			MongoClientHolder holder = new MongoClientHolder();
-			MongoClientOptions.Builder builder = MongoClientOptions.builder()
-					.addCommandListener(new CommonMongoCommandListener(name));
-			holder.uri = new MongoClientURI(dataSourceUrl, builder);
-			holder.client = new MongoClient(holder.uri);
-			MongoClientOptions o = holder.client.getMongoClientOptions();
-			LOGGER.info("MONGODB: MongoClient:{}:{}   {}", tnt, dbtnt, o.getConnectionsPerHost());
+			holder.uri = new ConnectionString(dataSourceUrl);
+			MongoClientSettings settings = MongoClientSettings.builder().applyConnectionString(holder.uri)
+					.addCommandListener(new CommonMongoCommandListener(name)).build();
+			holder.client = MongoClients.create(settings);
+			LOGGER.info("MONGODB: MongoClient:{}:{}   {}", tnt, dbtnt,
+					settings.getConnectionPoolSettings().getMaxSize());
 			return holder;
 		});
 
@@ -145,16 +146,16 @@ public class CommonMongoSource {
 					ReadPreference.secondaryPreferred());
 		} else {
 			LOGGER.info("MONGODB[WR]: {}:{}:{}", dataBaseName, Tenants.isDefault(tnt), dbtnt);
-			return new SimpleMongoDbFactory(clientHolder.client, dataBaseName);
+			return new SimpleMongoClientDatabaseFactory(clientHolder.client, dataBaseName);
 		}
 
 	}
 
-	public MongoDbFactory getMongoDbFactory(String dataSourceUrl) {
+	public MongoDatabaseFactory getMongoDbFactory(String dataSourceUrl) {
 		return this.mongoDbFactory(dataSourceUrl, getRule());
 	}
 
-	public MongoDbFactory mongoDbFactory(USE_DB useDb) {
+	public MongoDatabaseFactory mongoDbFactory(USE_DB useDb) {
 		if (ArgUtil.is(USE_DB.USE_NO_DB, useDb)) {
 			if (mongoDbFactoryNoDb == null && ArgUtil.is(dataSourceUrl)) {
 				mongoDbFactoryNoDb = mongoDbFactory(dataSourceUrl, useDb);
@@ -177,11 +178,11 @@ public class CommonMongoSource {
 		}
 	}
 
-	public MongoDbFactory getMongoDbFactory() {
+	public MongoDatabaseFactory getMongoDbFactory() {
 		return this.mongoDbFactory(getRule());
 	}
 
-	public MongoDbFactory getMongoDbFactoryReadOnly() {
+	public MongoDatabaseFactory getMongoDbFactoryReadOnly() {
 		return this.mongoDbFactory(USE_DB.READ_ONLY_DB);
 	}
 
@@ -201,7 +202,7 @@ public class CommonMongoSource {
 					}
 				}
 			} else {
-				LOGGER.debug("mongoDbFactoryNoDb = {}", mongoDbFactoryNoDb.getDb().getName());
+				LOGGER.debug("mongoDbFactoryNoDb = {}", mongoDbFactoryNoDb.getMongoDatabase().getName());
 			}
 			return mongoTemplateNoDb;
 		} else if (ArgUtil.is(USE_DB.USE_DEFAULT_DB, useDb)) {
@@ -219,7 +220,7 @@ public class CommonMongoSource {
 					}
 				}
 			} else {
-				LOGGER.debug("mongoDbFactoryDefault = {}", mongoDbFactoryDefault.getDb().getName());
+				LOGGER.debug("mongoDbFactoryDefault = {}", mongoDbFactoryDefault.getMongoDatabase().getName());
 			}
 			return mongoTemplateDefault;
 		} else {
@@ -236,7 +237,7 @@ public class CommonMongoSource {
 					}
 				}
 			} else {
-				LOGGER.debug("mongoDbFactory = {}", mongoDbFactory.getDb().getName());
+				LOGGER.debug("mongoDbFactory = {}", mongoDbFactory.getMongoDatabase().getName());
 			}
 			return mongoTemplate;
 		}
@@ -290,13 +291,19 @@ public class CommonMongoSource {
 		this.tenantDB = tenantDB;
 	}
 
-	public MappingMongoConverter mappingMongoConverter(MongoDbFactory factory) {
+	public MappingMongoConverter mappingMongoConverter(MongoDatabaseFactory factory) {
 		// return null;
 		DbRefResolver dbRefResolver = new DefaultDbRefResolver(factory);
 		MongoCustomConversions conversions = customConversions();
 
 		MongoMappingContext mappingContext = new MongoMappingContext();
 		mappingContext.setSimpleTypeHolder(conversions.getSimpleTypeHolder());
+		// Spring Data MongoDB flipped auto-index-creation's default from true (2.0.x)
+		// to false (3.0+). This mapping context is built by hand rather than via
+		// Boot's Mongo auto-configuration, so the spring.data.mongodb.auto-index-creation
+		// property has no effect here - set it explicitly to keep the @Indexed/
+		// @CompoundIndex annotations across the codebase creating indexes on startup.
+		mappingContext.setAutoIndexCreation(true);
 		mappingContext.afterPropertiesSet();
 
 		MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mappingContext);

@@ -1,13 +1,18 @@
 package com.boot.jx.swagger;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 
 import com.boot.jx.AppConfig;
 import com.boot.jx.AppConstants;
@@ -35,6 +40,7 @@ import springfox.documentation.service.Parameter;
 import springfox.documentation.service.SecurityScheme;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.spring.web.plugins.WebMvcRequestHandlerProvider;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
@@ -60,6 +66,45 @@ public class DefaultSwaggerConfig {
 
 	@Value("${swagger.groupName}")
 	String swaggerDefaultGroup;
+
+	// Springfox 2.x (still on the legacy AntPathMatcher-based request-mapping
+	// APIs) assumes every RequestMappingInfoHandlerMapping in the context uses
+	// the Ant-based PatternsRequestCondition. Since Spring Boot 2.6, Actuator's
+	// own WebMvcEndpointHandlerMapping always uses the newer PathPattern-based
+	// condition instead - regardless of the spring.mvc.pathmatch.matching-strategy
+	// property (that property only affects the application's own
+	// RequestMappingHandlerMapping) - leaving Springfox's legacy accessor null
+	// and crashing documentationPluginsBootstrapper with an NPE. Stripping any
+	// PathPattern-based mapping (i.e. Actuator's) out of Springfox's
+	// WebMvcRequestHandlerProvider after it's constructed - via a
+	// BeanPostProcessor rather than redefining the bean - avoids that crash
+	// without needing spring.main.allow-bean-definition-overriding=true.
+	@Bean
+	public static BeanPostProcessor springfoxHandlerProviderBeanPostProcessor() {
+		return new BeanPostProcessor() {
+			@Override
+			public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+				if (bean instanceof WebMvcRequestHandlerProvider) {
+					customizeSpringfoxHandlerMappings(getHandlerMappings(bean));
+				}
+				return bean;
+			}
+
+			@SuppressWarnings("unchecked")
+			private <T extends RequestMappingInfoHandlerMapping> List<T> getHandlerMappings(Object bean) {
+				Field field = ReflectionUtils.findField(bean.getClass(), "handlerMappings");
+				ReflectionUtils.makeAccessible(field);
+				return (List<T>) ReflectionUtils.getField(field, bean);
+			}
+
+			private <T extends RequestMappingInfoHandlerMapping> void customizeSpringfoxHandlerMappings(
+					List<T> mappings) {
+				if (mappings != null) {
+					mappings.removeIf(mapping -> mapping.getPatternParser() != null);
+				}
+			}
+		};
+	}
 
 	@Bean
 	public Docket productApi(@Autowired(required = false) List<MockParam> mockParams) {

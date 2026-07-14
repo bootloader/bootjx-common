@@ -10,6 +10,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,7 @@ public class AuditRequestFilter implements Filter {
 
 	public static final int AUDIT_PRECEDENCE = Ordered.HIGHEST_PRECEDENCE - 1;
 
+	@Lazy
 	@Autowired(required = false)
 	private AuditDetailProvider auditDetailProvider;
 

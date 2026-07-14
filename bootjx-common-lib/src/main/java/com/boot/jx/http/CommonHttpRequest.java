@@ -15,7 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.mobile.device.Device;
 import org.springframework.mobile.device.DeviceUtils;
@@ -121,8 +123,40 @@ public class CommonHttpRequest extends ACommonHttpRequest {
 			.synchronizedMap(new HashMap<String, ApiRequest>());
 	private static boolean IS_API_REQUEST_MAPPED = false;
 
+	// ObjectProvider (not @Lazy) breaks a bean-creation cycle: this bean's
+	// construction otherwise waits on Spring MVC's RequestMappingHandlerMapping,
+	// which (via WebMvcAutoConfiguration$EnableWebMvcConfiguration -> AppMVConfig
+	// -> AppRequestInterceptor) depends right back on this same bean. Rejected
+	// by default since Spring Boot 2.6 (spring.main.allow-circular-references=
+	// false). A field-level @Lazy proxy would "fix" the cycle too, but
+	// RequestMappingHandlerMapping's getHandler(...) is declared `final` in
+	// AbstractHandlerMapping, so CGLIB can't override it on the lazy proxy: the
+	// call runs directly on the Objenesis-instantiated proxy shell (whose
+	// inherited `logger` field was never initialized, since no constructor/field
+	// initializer ever ran on it), NPE-ing on `logger.isTraceEnabled()` for
+	// every real request. ObjectProvider defers the lookup itself (no proxy
+	// involved) until getHandlerMapping() below is actually called at
+	// request-handling time, long after context startup, returning the real
+	// bean instance instead. Explicit @Qualifier is required here: there are 4
+	// RequestMappingHandlerMapping beans in the context (this app's own,
+	// Swagger's, Actuator's, and Spring Integration's) - @Autowired field
+	// injection silently disambiguates same-type/same-name candidates via its
+	// "match the field name to the bean name" fallback, but that fallback isn't
+	// applied when later calling getObject()/getIfAvailable() on an
+	// ObjectProvider, so without this @Qualifier resolution fails with
+	// NoUniqueBeanDefinitionException on every request.
 	@Autowired
+	@Qualifier("requestMappingHandlerMapping")
+	private ObjectProvider<RequestMappingHandlerMapping> requestMappingHandlerMappingProvider;
+
 	private RequestMappingHandlerMapping requestMappingHandlerMapping;
+
+	private RequestMappingHandlerMapping getHandlerMapping() {
+		if (requestMappingHandlerMapping == null) {
+			requestMappingHandlerMapping = requestMappingHandlerMappingProvider.getIfAvailable();
+		}
+		return requestMappingHandlerMapping;
+	}
 
 	CommonHttpRequest init(HttpServletRequest request, HttpServletResponse response, AppConfig appConfig) {
 		this.request = request;
@@ -487,7 +521,11 @@ public class CommonHttpRequest extends ACommonHttpRequest {
 		createApiRequestModels();
 		HandlerExecutionChain handlerExeChain;
 		try {
-			handlerExeChain = requestMappingHandlerMapping.getHandler(req);
+			RequestMappingHandlerMapping handlerMapping = getHandlerMapping();
+			if (handlerMapping == null) {
+				return null;
+			}
+			handlerExeChain = handlerMapping.getHandler(req);
 			HandlerMethod handlerMethod = null;
 
 			if (!ArgUtil.isEmpty(handlerExeChain)) {
@@ -511,8 +549,11 @@ public class CommonHttpRequest extends ACommonHttpRequest {
 			return true;
 		}
 		try {
-			Set<Entry<RequestMappingInfo, HandlerMethod>> x = requestMappingHandlerMapping.getHandlerMethods()
-					.entrySet();
+			RequestMappingHandlerMapping handlerMapping = getHandlerMapping();
+			if (handlerMapping == null) {
+				return false;
+			}
+			Set<Entry<RequestMappingInfo, HandlerMethod>> x = handlerMapping.getHandlerMethods().entrySet();
 			for (Entry<RequestMappingInfo, HandlerMethod> requestMappingInfo : x) {
 
 				HandlerMethod handlerMethod = requestMappingInfo.getValue();

@@ -15,8 +15,7 @@ import com.boot.utils.ArgUtil;
 
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.IMongodConfig;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 
@@ -46,7 +45,7 @@ public abstract class BaseMongoTestSetup { // Noncompliant
 		try {
 			MongodStarter starter = MongodStarter.getDefaultInstance();
 			// V3_6 avoids the PRODUCTION 32-bit binary issue on macOS ARM (flapdoodle 2.0.3).
-			IMongodConfig mongodConfig = new MongodConfigBuilder().version(Version.Main.V3_6)
+			MongodConfig mongodConfig = MongodConfig.builder().version(Version.Main.V3_6)
 					.net(new Net(PORT, false))
 					.build();
 			mongodExecutable = starter.prepare(mongodConfig);

@@ -8,9 +8,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
-import org.jasypt.encryption.StringEncryptor;
-import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
-import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -288,6 +285,18 @@ public class AppConfig {
 
 	@Bean
 	public AppParam loadAppParams() {
+		doLoadAppParams();
+		return null;
+	}
+
+	// Extracted from the loadAppParams() @Bean method so that init() (a
+	// @PostConstruct callback that runs while this AppConfig bean is still
+	// "currently in creation") can execute the same logic without invoking
+	// this.loadAppParams() through the CGLIB @Configuration proxy - that
+	// self-invocation forces Spring to resolve the AppConfig singleton from
+	// the container mid-creation, which Spring Framework 5.3 (Boot 2.6+)
+	// rejects by default as an unresolvable circular reference.
+	private void doLoadAppParams() {
 
 		LOGGER.info("Loading loadAppParams");
 
@@ -329,7 +338,6 @@ public class AppConfig {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		return null;
 	}
 
 	@Bean
@@ -415,7 +423,7 @@ public class AppConfig {
 		if (defaultTenant != null) {
 			Tenants.setDefault(defaultTenant);
 		}
-		this.loadAppParams();
+		doLoadAppParams();
 	}
 
 	public String getDefaultTenant() {
@@ -488,32 +496,14 @@ public class AppConfig {
 
 	// Crypto Config
 
-	@Value("${jasypt.encryptor.password}")
-	String jasyptEncryptorPassword;
-
-	@Value("${jasypt.encryptor.algorithm}")
-	String jasyptEncryptorAlgorithm;
+	// stringEncryptor()/encryptorBean moved to JasyptEncryptorConfig - see its
+	// Javadoc for why it can't live here alongside appSpecifcDecryptedProp.
 
 	@Value("${encrypted.app.property}")
 	String appSpecifcDecryptedProp;
 
 	public String getAppSpecifcDecryptedProp() {
 		return appSpecifcDecryptedProp;
-	}
-
-	@Bean(name = "encryptorBean")
-	public StringEncryptor stringEncryptor() {
-		PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
-		SimpleStringPBEConfig config = new SimpleStringPBEConfig();
-		config.setPassword(jasyptEncryptorPassword);
-		config.setAlgorithm(jasyptEncryptorAlgorithm);
-		config.setKeyObtentionIterations("1000");
-		config.setPoolSize("1");
-		config.setProviderName("SunJCE");
-		config.setSaltGeneratorClassName("org.jasypt.salt.RandomSaltGenerator");
-		config.setStringOutputType("base64");
-		encryptor.setConfig(config);
-		return encryptor;
 	}
 
 	public String getCookieSameSite() {

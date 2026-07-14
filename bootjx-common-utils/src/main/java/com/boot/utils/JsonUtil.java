@@ -94,13 +94,13 @@ public final class JsonUtil {
 			return null;
 		}
 
-		@SuppressWarnings("rawtypes")
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public <E> E fromJson(String json, TypeReference valueTypeRef) {
 			if (json == null || "".equals(json.trim()) || "\"\"".equals(json.trim())) {
 				return null;
 			}
 			try {
-				return getMapper().readValue(json, valueTypeRef);
+				return (E) getMapper().readValue(json, valueTypeRef);
 			} catch (IOException e) {
 				LOG.warn("error converting from json=" + json, e);
 			}

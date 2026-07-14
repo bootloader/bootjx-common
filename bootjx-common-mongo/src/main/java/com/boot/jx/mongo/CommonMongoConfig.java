@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import com.boot.jx.mongo.CommonMongoTemplate.ReadOnlyMongoTemplate;
@@ -29,7 +29,7 @@ public class CommonMongoConfig {
 	@Primary
 	public MongoTemplate mongoTemplate() {
 		CommonMongoSource source = commonMongoSourceProvider.getSource();
-		MongoDbFactory factory = source.getMongoDbFactory(dataSourceUrl);
+		MongoDatabaseFactory factory = source.getMongoDbFactory(dataSourceUrl);
 		return new MongoTemplateCommonImpl(factory, source.mappingMongoConverter(factory));
 	}
 
@@ -37,7 +37,7 @@ public class CommonMongoConfig {
 	@TenantDefaultQualifier
 	public MongoTemplate mongoDefaultTemplate() {
 		CommonMongoSource source = commonMongoSourceProvider.getSource();
-		MongoDbFactory factory = source.getMongoDbFactory(dataSourceUrl);
+		MongoDatabaseFactory factory = source.getMongoDbFactory(dataSourceUrl);
 		return new MongoTemplateCommonImpl(factory, source.mappingMongoConverter(factory)).onlyDefault(true);
 	}
 
@@ -50,7 +50,7 @@ public class CommonMongoConfig {
 	@Qualifier("mongoReadOnlyTemplate")
 	public MongoTemplate mongoReadOnlyTemplate() {
 		CommonMongoSource source = commonMongoSourceProvider.getReadOnlySource();
-		MongoDbFactory factory = source.getMongoDbFactory(dataSourceUrl);
+		MongoDatabaseFactory factory = source.getMongoDbFactory(dataSourceUrl);
 		return new MongoTemplateCommonImpl(factory, source.mappingMongoConverter(factory)).readOnly(true);
 	}
 
@@ -63,7 +63,7 @@ public class CommonMongoConfig {
 	@Qualifier("mongoTenantDefaultReadOnlyTemplate")
 	public MongoTemplate mongoTenantDefaultReadOnlyTemplate() {
 		CommonMongoSource source = commonMongoSourceProvider.getReadOnlySource();
-		MongoDbFactory factory = source.getMongoDbFactory(dataSourceUrl);
+		MongoDatabaseFactory factory = source.getMongoDbFactory(dataSourceUrl);
 		return new MongoTemplateCommonImpl(factory, source.mappingMongoConverter(factory)).readOnly(true)
 				.onlyDefault(true);
 	}

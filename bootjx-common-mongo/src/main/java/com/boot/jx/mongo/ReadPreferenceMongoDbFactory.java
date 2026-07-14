@@ -1,12 +1,12 @@
 package com.boot.jx.mongo;
 
-import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
+import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 
-import com.mongodb.MongoClient;
 import com.mongodb.ReadPreference;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
-public class ReadPreferenceMongoDbFactory extends SimpleMongoDbFactory {
+public class ReadPreferenceMongoDbFactory extends SimpleMongoClientDatabaseFactory {
 
 	private final ReadPreference readPreference;
 
@@ -16,12 +16,12 @@ public class ReadPreferenceMongoDbFactory extends SimpleMongoDbFactory {
 	}
 
 	@Override
-	public MongoDatabase getDb() {
-		return super.getDb().withReadPreference(readPreference);
+	public MongoDatabase getMongoDatabase() {
+		return super.getMongoDatabase().withReadPreference(readPreference);
 	}
 
 	@Override
-	public MongoDatabase getDb(String dbName) {
-		return super.getDb(dbName).withReadPreference(readPreference);
+	public MongoDatabase getMongoDatabase(String dbName) {
+		return super.getMongoDatabase(dbName).withReadPreference(readPreference);
 	}
 }

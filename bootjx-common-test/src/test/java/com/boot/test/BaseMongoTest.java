@@ -17,8 +17,7 @@ import com.boot.utils.JsonUtil;
 
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.IMongodConfig;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 
@@ -40,7 +39,7 @@ public abstract class BaseMongoTest { // Noncompliant
 		System.setProperty("javax.net.ssl.trustStore", userDirFolder + "/../certs/cacerts");
 
 		MongodStarter starter = MongodStarter.getDefaultInstance();
-		IMongodConfig mongodConfig = new MongodConfigBuilder().version(Version.Main.PRODUCTION)
+		MongodConfig mongodConfig = MongodConfig.builder().version(Version.Main.PRODUCTION)
 				.net(new Net(PORT, false)) // Set the port here
 				.build();
 		mongodExecutable = starter.prepare(mongodConfig);

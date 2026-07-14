@@ -7,7 +7,7 @@ import java.util.Set;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.GeoResults;
-import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.BulkOperations.BulkMode;
 import org.springframework.data.mongodb.core.CollectionCallback;
@@ -30,7 +30,7 @@ import org.springframework.data.mongodb.core.mapreduce.MapReduceResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.core.query.UpdateDefinition;
 import org.springframework.data.util.CloseableIterator;
 
 import com.mongodb.ReadPreference;
@@ -47,11 +47,11 @@ public class MongoTemplateCommonImpl extends MongoTemplate {
 	private boolean onlyDefault = false;
 	private boolean readOnly = false;
 
-	public MongoTemplateCommonImpl(MongoDbFactory mongoDbFactory) {
+	public MongoTemplateCommonImpl(MongoDatabaseFactory mongoDbFactory) {
 		super(mongoDbFactory);
 	}
 
-	public MongoTemplateCommonImpl(MongoDbFactory factory, MappingMongoConverter mongoConverter) {
+	public MongoTemplateCommonImpl(MongoDatabaseFactory factory, MappingMongoConverter mongoConverter) {
 		super(factory, mongoConverter);
 	}
 
@@ -334,22 +334,22 @@ public class MongoTemplateCommonImpl extends MongoTemplate {
 	}
 
 	@Override
-	public <T> T findAndModify(Query query, Update update, Class<T> entityClass) {
+	public <T> T findAndModify(Query query, UpdateDefinition update, Class<T> entityClass) {
 		return getCommonMongoTemplate().findAndModify(query, update, entityClass);
 	}
 
 	@Override
-	public <T> T findAndModify(Query query, Update update, Class<T> entityClass, String collectionName) {
+	public <T> T findAndModify(Query query, UpdateDefinition update, Class<T> entityClass, String collectionName) {
 		return getCommonMongoTemplate().findAndModify(query, update, entityClass, collectionName);
 	}
 
 	@Override
-	public <T> T findAndModify(Query query, Update update, FindAndModifyOptions options, Class<T> entityClass) {
+	public <T> T findAndModify(Query query, UpdateDefinition update, FindAndModifyOptions options, Class<T> entityClass) {
 		return getCommonMongoTemplate().findAndModify(query, update, options, entityClass);
 	}
 
 	@Override
-	public <T> T findAndModify(Query query, Update update, FindAndModifyOptions options, Class<T> entityClass,
+	public <T> T findAndModify(Query query, UpdateDefinition update, FindAndModifyOptions options, Class<T> entityClass,
 			String collectionName) {
 		return getCommonMongoTemplate().findAndModify(query, update, options, entityClass, collectionName);
 	}
@@ -380,82 +380,82 @@ public class MongoTemplateCommonImpl extends MongoTemplate {
 	}
 
 	@Override
-	public void insert(Object objectToSave) {
-		getCommonMongoTemplate().insert(objectToSave);
+	public <T> T insert(T objectToSave) {
+		return getCommonMongoTemplate().insert(objectToSave);
 	}
 
 	@Override
-	public void insert(Object objectToSave, String collectionName) {
-		getCommonMongoTemplate().insert(objectToSave, collectionName);
+	public <T> T insert(T objectToSave, String collectionName) {
+		return getCommonMongoTemplate().insert(objectToSave, collectionName);
 	}
 
 	@Override
-	public void insert(Collection<? extends Object> batchToSave, Class<?> entityClass) {
-		getCommonMongoTemplate().insert(batchToSave, entityClass);
+	public <T> Collection<T> insert(Collection<? extends T> batchToSave, Class<?> entityClass) {
+		return getCommonMongoTemplate().insert(batchToSave, entityClass);
 	}
 
 	@Override
-	public void insert(Collection<? extends Object> batchToSave, String collectionName) {
-		getCommonMongoTemplate().insert(batchToSave, collectionName);
+	public <T> Collection<T> insert(Collection<? extends T> batchToSave, String collectionName) {
+		return getCommonMongoTemplate().insert(batchToSave, collectionName);
 	}
 
 	@Override
-	public void insertAll(Collection<? extends Object> objectsToSave) {
-		getCommonMongoTemplate().insertAll(objectsToSave);
+	public <T> Collection<T> insertAll(Collection<? extends T> objectsToSave) {
+		return getCommonMongoTemplate().insertAll(objectsToSave);
 	}
 
 	@Override
-	public void save(Object objectToSave) {
-		getCommonMongoTemplate().save(objectToSave);
+	public <T> T save(T objectToSave) {
+		return getCommonMongoTemplate().save(objectToSave);
 	}
 
 	@Override
-	public void save(Object objectToSave, String collectionName) {
-		getCommonMongoTemplate().save(objectToSave, collectionName);
+	public <T> T save(T objectToSave, String collectionName) {
+		return getCommonMongoTemplate().save(objectToSave, collectionName);
 	}
 
 	@Override
-	public UpdateResult upsert(Query query, Update update, Class<?> entityClass) {
+	public UpdateResult upsert(Query query, UpdateDefinition update, Class<?> entityClass) {
 		return getCommonMongoTemplate().upsert(query, update, entityClass);
 	}
 
 	@Override
-	public UpdateResult upsert(Query query, Update update, String collectionName) {
+	public UpdateResult upsert(Query query, UpdateDefinition update, String collectionName) {
 		return getCommonMongoTemplate().upsert(query, update, collectionName);
 	}
 
 	@Override
-	public UpdateResult upsert(Query query, Update update, Class<?> entityClass, String collectionName) {
+	public UpdateResult upsert(Query query, UpdateDefinition update, Class<?> entityClass, String collectionName) {
 		return getCommonMongoTemplate().upsert(query, update, entityClass, collectionName);
 	}
 
 	@Override
-	public UpdateResult updateFirst(Query query, Update update, Class<?> entityClass) {
+	public UpdateResult updateFirst(Query query, UpdateDefinition update, Class<?> entityClass) {
 		return getCommonMongoTemplate().updateFirst(query, update, entityClass);
 	}
 
 	@Override
-	public UpdateResult updateFirst(Query query, Update update, String collectionName) {
+	public UpdateResult updateFirst(Query query, UpdateDefinition update, String collectionName) {
 		return getCommonMongoTemplate().updateFirst(query, update, collectionName);
 	}
 
 	@Override
-	public UpdateResult updateFirst(Query query, Update update, Class<?> entityClass, String collectionName) {
+	public UpdateResult updateFirst(Query query, UpdateDefinition update, Class<?> entityClass, String collectionName) {
 		return getCommonMongoTemplate().updateFirst(query, update, entityClass, collectionName);
 	}
 
 	@Override
-	public UpdateResult updateMulti(Query query, Update update, Class<?> entityClass) {
+	public UpdateResult updateMulti(Query query, UpdateDefinition update, Class<?> entityClass) {
 		return getCommonMongoTemplate().updateMulti(query, update, entityClass);
 	}
 
 	@Override
-	public UpdateResult updateMulti(Query query, Update update, String collectionName) {
+	public UpdateResult updateMulti(Query query, UpdateDefinition update, String collectionName) {
 		return getCommonMongoTemplate().updateMulti(query, update, collectionName);
 	}
 
 	@Override
-	public UpdateResult updateMulti(Query query, Update update, Class<?> entityClass, String collectionName) {
+	public UpdateResult updateMulti(Query query, UpdateDefinition update, Class<?> entityClass, String collectionName) {
 		return getCommonMongoTemplate().updateMulti(query, update, entityClass, collectionName);
 	}
 

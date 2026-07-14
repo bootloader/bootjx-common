@@ -58,6 +58,16 @@ public class CommonMongoTemplateAbstract<TStore extends CommonMongoTemplateAbstr
 
 	// protected MongoConverter mongoConverter;
 
+	// @Lazy breaks a bean-creation cycle: any app-level bean that both (a)
+	// implements AuditDetailProvider (e.g. AdminSessionService) and (b) depends
+	// (directly or transitively) on a store extending this class ends up
+	// needing itself to finish construction - Spring Boot 2.6+ rejects that by
+	// default (spring.main.allow-circular-references=false). AuditDetailProvider
+	// is an interface, so the lazy JDK proxy here delegates every call
+	// correctly (unlike a @Lazy proxy over a concrete class with final
+	// methods - see CommonHttpRequest.requestMappingHandlerMappingProvider for
+	// why that distinction matters).
+	@Lazy
 	@Autowired(required = false)
 	protected AuditDetailProvider auditDetailProvider;
 
