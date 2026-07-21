@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
+import com.boot.utils.CommonStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -88,7 +88,7 @@ public class AppRequestInterceptor extends HandlerInterceptorAdapter {
 		if (setCookieHeaders == null || setCookieHeaders.isEmpty())
 			return;
 
-		List<String> headers = setCookieHeaders.stream().filter(StringUtils::isNotBlank).map(header -> {
+		List<String> headers = setCookieHeaders.stream().filter(CommonStringUtils::isNotBlank).map(header -> {
 			if (header.toLowerCase().contains("samesite")) {
 				return header;
 			} else {

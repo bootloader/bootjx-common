@@ -97,8 +97,9 @@
 			<version>${jasypt.spring.version}</version>
 		</dependency> 
 		
-		<!-- org.apache.commons.lang.* call sites migrated to lang3; version
-			inherited from the Spring Boot 2.0.5 BOM (3.7). -->
+		<!-- commons-lang3 only consumed via CommonStringUtils / CommonArrayUtils /
+			CommonEqualsBuilder / CommonHashCodeBuilder. Do not import
+			org.apache.commons.lang3.* from call sites. Version from Spring Boot BOM. -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
