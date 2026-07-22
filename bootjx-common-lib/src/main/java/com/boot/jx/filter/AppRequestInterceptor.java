@@ -89,7 +89,12 @@ public class AppRequestInterceptor extends HandlerInterceptorAdapter {
 			return;
 
 		List<String> headers = setCookieHeaders.stream().filter(CommonStringUtils::isNotBlank).map(header -> {
-			if (header.toLowerCase().contains("samesite")) {
+			String lower = header.toLowerCase();
+			// SameSite=None without Secure is rejected by browsers
+			if (lower.contains("samesite=none") && !lower.contains("secure")) {
+				return header.concat(secureAttribute);
+			}
+			if (lower.contains("samesite")) {
 				return header;
 			} else {
 				return header.concat(sameSiteAttribute);

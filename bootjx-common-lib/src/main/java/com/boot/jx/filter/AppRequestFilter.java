@@ -409,16 +409,21 @@ public class AppRequestFilter implements Filter {
 			return;
 
 		List<String> newHeaders = headers.stream().map(header -> {
-			if (header.toLowerCase().contains("samesite")) {
+			String lower = header.toLowerCase();
+			// SameSite=None without Secure is rejected by browsers (breaks SESSION auth)
+			if (lower.contains("samesite=none") && !lower.contains("secure")) {
+				return header + "; Secure";
+			}
+			if (lower.contains("samesite")) {
 				return header; // already set
 			}
 			// Only add SameSite=None if Secure is also present (required by browsers)
-			if (header.toLowerCase().contains("secure")) {
+			if (lower.contains("secure")) {
 				return header + "; SameSite=None";
 			} else {
 				return header; // skip if not secure
 			}
-		}).collect(Collectors.toList());;
+		}).collect(Collectors.toList());
 
 		response.setHeader(HttpHeaders.SET_COOKIE, null); // Clear existing
 		for (String newHeader : newHeaders) {
