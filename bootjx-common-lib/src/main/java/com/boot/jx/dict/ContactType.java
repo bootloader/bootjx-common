@@ -7,6 +7,12 @@ public enum ContactType {
 			return true;
 		}
 	},
+	RCS("rcs", "RCS No.") {
+		@Override
+		public boolean isPhoneIndex() {
+			return true;
+		}
+	},
 	OA("oa", "OA") {
 		@Override
 		public boolean isPhoneIndex() {
