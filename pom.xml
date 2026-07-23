@@ -25,7 +25,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>17</java.version>
+		<java.version>11</java.version>
 		<boot.jx.version>2.7.18-SNAPSHOT</boot.jx.version>
 		<!-- Mongo Java driver line. Overrides the Boot 2.7.18 BOM's own 4.6.1
 			pin: 4.11.5 is already verified end-to-end against this codebase and
@@ -130,8 +130,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>17</source>
-					<target>17</target>
+					<source>11</source>
+					<target>11</target>
 				</configuration>
 			</plugin>
 		</plugins>
