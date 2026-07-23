@@ -75,4 +75,12 @@ public class PatternUtil {
 	public static Pattern contains(String string) {
 		return PatternUtil.toPattern("" + string + "", "i");
 	}
+
+	public static Pattern startsWith(String string) {
+		return PatternUtil.toPattern("^" + string, "i");
+	}
+
+	public static Pattern endsWith(String string) {
+		return PatternUtil.toPattern(string + "$", "i");
+	}
 }

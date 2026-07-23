@@ -257,8 +257,18 @@ public class CommonMongoStore<TStore extends CommonMongoStore<TStore>> extends C
 		for (Entry<String, Object> entry : query.extraParams.map().entrySet()) {
 			String value = ArgUtil.parseAsString(entry.getValue(), Constants.BLANK);
 			String key = entry.getKey();
-			if (value.startsWith("*") && value.endsWith("*")) {
-				q.search(entry.getKey(), StringUtils.trim(value, '*'));
+			boolean prefixWild = value.startsWith("*");
+			boolean suffixWild = value.endsWith("*");
+			// *gudi* contains, gudi* starts-with, *gudi ends-with
+			if ((prefixWild || suffixWild) && value.length() > 1) {
+				String pattern = StringUtils.trim(value, '*');
+				if (prefixWild && suffixWild) {
+					q.search(key, pattern);
+				} else if (suffixWild) {
+					q.searchStartsWith(key, pattern);
+				} else {
+					q.searchEndsWith(key, pattern);
+				}
 			} else {
 				StringMatcher keyMatcher = new StringMatcher(entry.getKey());
 				if (keyMatcher.isMatch(QueryParams.COMPARE_PATTERN)) {

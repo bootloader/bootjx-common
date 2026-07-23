@@ -188,6 +188,22 @@ public class CommonMongoQB<M extends CommonMongoQB<M, T>, T> implements IMongoQu
 	}
 
 	@SuppressWarnings("unchecked")
+	public M searchStartsWith(String key, String o) {
+		if (ArgUtil.is(o)) {
+			query().addCriteria(Criteria.where(key).regex(PatternUtil.startsWith(o)));
+		}
+		return (M) this;
+	}
+
+	@SuppressWarnings("unchecked")
+	public M searchEndsWith(String key, String o) {
+		if (ArgUtil.is(o)) {
+			query().addCriteria(Criteria.where(key).regex(PatternUtil.endsWith(o)));
+		}
+		return (M) this;
+	}
+
+	@SuppressWarnings("unchecked")
 	public M having(String key) {
 		query().addCriteria(Criteria.where(key).exists(true));
 		return (M) this;
