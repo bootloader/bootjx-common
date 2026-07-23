@@ -311,7 +311,12 @@ public class AppRequestFilter implements Filter {
 				setFlow(req, apiRequest);
 				String flowFix = AppContextUtil.getFlowfix();
 
-				HttpSession session = req.getSession(apiRequest.isSession() || appConfig.isAppSessionEnabled());
+				// SockJS/STOMP must reuse the existing HTTP session only. Creating a
+				// new one issues Set-Cookie and can wipe the authenticated SESSION
+				// once allowCredentials is true (allowedOriginPatterns).
+				boolean createSession = !RequestType.STOMP.equals(reqType)
+						&& (apiRequest.isSession() || appConfig.isAppSessionEnabled());
+				HttpSession session = req.getSession(createSession);
 				if (ArgUtil.isEmpty(sessionId)) {
 					if (ArgUtil.isEmpty(fp)) {
 						fp = localCommonHttpRequest.getRequestParam(AppConstants.DEVICE_XID_KEY);
