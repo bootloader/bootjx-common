@@ -1,6 +1,7 @@
 package com.boot.jx.tunnel;
 
 import com.boot.jx.AppParam;
+import com.boot.jx.def.MCQCodecDefs;
 
 public enum TunnelEventXchange {
 	/**
@@ -45,20 +46,24 @@ public enum TunnelEventXchange {
 		this.queuePrefix = null;
 	}
 
+	private String keyPrefix() {
+		return AppParam.APP_ENV.getValue() + "_C" + MCQCodecDefs.CODEC_VERSION + "_" + queuePrefix + "_";
+	}
+
 	public String getTopic(String topic) {
-		return AppParam.APP_ENV.getValue() + "_" + queuePrefix + "_T_" + topic;
+		return keyPrefix() + "T_" + topic;
 	}
 
 	public String getQueue(String topic) {
-		return AppParam.APP_ENV.getValue() + "_" + queuePrefix + "_Q_" + topic;
+		return keyPrefix() + "Q_" + topic;
 	}
 
 	public String getStatusMap(String topic) {
-		return AppParam.APP_ENV.getValue() + "_" + queuePrefix + "_M_" + topic;
+		return keyPrefix() + "M_" + topic;
 	}
 
 	public String getEventMap(String topic) {
-		return AppParam.APP_ENV.getValue() + "_" + queuePrefix + "_E_" + topic;
+		return keyPrefix() + "E_" + topic;
 	}
 
 }
