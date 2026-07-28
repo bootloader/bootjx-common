@@ -9,13 +9,16 @@ import com.boot.utils.StringUtils;
 public final class TenantAwareKey {
 	private static final String KEY_DELIMITER = ":::";
 	private static final String CODE_DELIMITER = "#";
+	private static final String DEFAULT_MODULE = "M";
+	private final String module;
 	private final String tenant;
 	private final String code;
 	private final String[] args;
 	private final String version;
 	private final int hash;
 
-	public TenantAwareKey(String tenant, String code, String... args) {
+	private TenantAwareKey(String tenant, String module, String code, String... args) {
+		this.module = module;
 		this.tenant = Objects.requireNonNull(tenant, "Tenant cannot be null");
 		this.code = Objects.requireNonNull(code, "Code cannot be null");
 		this.args = args != null ? Arrays.stream(args).map(s -> s == null ? "" : s).toArray(String[]::new)
@@ -25,7 +28,7 @@ public final class TenantAwareKey {
 	}
 
 	private int computeHash() {
-		int result = Objects.hash(tenant, code, version);
+		int result = Objects.hash(tenant, module, code, version);
 		result = 31 * result + Arrays.hashCode(args);
 		return result;
 	}
@@ -47,12 +50,7 @@ public final class TenantAwareKey {
 	}
 
 	public String toString() {
-		return key(code, args);
-	}
-
-	private String key(String code, String... args) {
-		return tenant + KEY_DELIMITER + "c" + version + KEY_DELIMITER + code + CODE_DELIMITER
-				+ StringUtils.join(CODE_DELIMITER, args);
+		return keyForTenant(tenant, module, code, args);
 	}
 
 	@Override
@@ -63,7 +61,7 @@ public final class TenantAwareKey {
 			return false;
 		TenantAwareKey that = (TenantAwareKey) o;
 		return tenant.equals(that.tenant) && code.equals(that.code) && Objects.equals(version, that.version)
-				&& Arrays.equals(args, that.args);
+				&& Objects.equals(module, that.module) && Arrays.equals(args, that.args);
 	}
 
 	@Override
@@ -72,11 +70,27 @@ public final class TenantAwareKey {
 	}
 
 	public static TenantAwareKey fromCode(String code) {
-		return new TenantAwareKey(AppContextUtil.getTenant(), code);
+		return new TenantAwareKey(AppContextUtil.getTenant(), DEFAULT_MODULE, code);
 	}
 
 	public static TenantAwareKey fromCodeArgs(String code, String... args) {
-		return new TenantAwareKey(AppContextUtil.getTenant(), code, args);
+		return new TenantAwareKey(AppContextUtil.getTenant(), DEFAULT_MODULE, code, args);
 	}
 
+	/**
+	 * This will use current tenant
+	 * 
+	 * @param module
+	 * @param code
+	 * @param args
+	 * @return
+	 */
+	public static String key(String module, String code, String... args) {
+		return keyForTenant(AppContextUtil.getTenant(), module, code, args);
+	}
+
+	private static String keyForTenant(String tenant, String module, String code, String... args) {
+		return tenant + KEY_DELIMITER + module + "v" + MCQCodecDefs.CODEC_VERSION + KEY_DELIMITER + code
+				+ CODE_DELIMITER + StringUtils.join(CODE_DELIMITER, args);
+	}
 }
