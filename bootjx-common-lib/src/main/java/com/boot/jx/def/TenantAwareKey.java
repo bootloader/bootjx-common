@@ -47,6 +47,10 @@ public final class TenantAwareKey {
 	}
 
 	public String toString() {
+		return key(code, args);
+	}
+
+	private String key(String code, String... args) {
 		return tenant + KEY_DELIMITER + "c" + version + KEY_DELIMITER + code + CODE_DELIMITER
 				+ StringUtils.join(CODE_DELIMITER, args);
 	}
