@@ -19,7 +19,7 @@ public final class StringUtils {
 
 	public static class StringMatcher {
 		String str;
-		Matcher m;
+		private Matcher m;
 
 		public StringMatcher(String str) {
 			this.str = str;

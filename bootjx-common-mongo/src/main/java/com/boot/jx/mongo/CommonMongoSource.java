@@ -1,6 +1,5 @@
 package com.boot.jx.mongo;
 
-import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -12,7 +11,6 @@ import org.springframework.data.mongodb.core.convert.DbRefResolver;
 import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
 import com.boot.jx.AppContextUtil;
 import com.boot.jx.http.CommonHttpRequest.ApiRequestDetail;
@@ -292,29 +290,13 @@ public class CommonMongoSource {
 	}
 
 	public MappingMongoConverter mappingMongoConverter(MongoDatabaseFactory factory) {
-		// return null;
-		DbRefResolver dbRefResolver = new DefaultDbRefResolver(factory);
 		MongoCustomConversions conversions = customConversions();
-
-		MongoMappingContext mappingContext = new MongoMappingContext();
-		mappingContext.setSimpleTypeHolder(conversions.getSimpleTypeHolder());
-		// Spring Data MongoDB flipped auto-index-creation's default from true (2.0.x)
-		// to false (3.0+). This mapping context is built by hand rather than via
-		// Boot's Mongo auto-configuration, so the spring.data.mongodb.auto-index-creation
-		// property has no effect here - set it explicitly to keep the @Indexed/
-		// @CompoundIndex annotations across the codebase creating indexes on startup.
-		mappingContext.setAutoIndexCreation(true);
-		mappingContext.afterPropertiesSet();
-
-		MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mappingContext);
-		converter.setCustomConversions(conversions);
-		converter.setMapKeyDotReplacement(DotReplacingConverters.DOT_REPLACEMENT);
-		converter.afterPropertiesSet();
-		return converter;
+		DeferredInitMongoMappingContext mappingContext = MongoMappingContextSupport.newContext(true);
+		return MongoMappingContextSupport.createConverter(factory, mappingContext, conversions);
 	}
 
 	public MongoCustomConversions customConversions() {
-		return new MongoCustomConversions(Collections.emptyList());
+		return MongoCustomConversions.create(adapter -> adapter.useNativeDriverJavaTimeCodecs(true));
 		// Commentiong code below, below lines causes mongo to not use default convertor
 		// and any object(pojo not map) in document faces issues of not able to find
 		// codec
