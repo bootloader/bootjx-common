@@ -1,11 +1,11 @@
 package com.boot.jx.mongo;
 
-import java.util.Collections;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScanner;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.ApplicationContext;
@@ -29,6 +29,7 @@ import com.boot.jx.mongo.CommonMongoTemplate.TenantDefaultReadOnlyMongoTemplate;
 import com.boot.jx.scope.tnt.TenantDefinations.TenantDefaultQualifier;
 
 @Configuration
+@AutoConfigureBefore(MongoDataAutoConfiguration.class)
 @PropertySource("classpath:application-mongo.properties")
 public class CommonMongoConfig {
 
@@ -46,7 +47,7 @@ public class CommonMongoConfig {
 	 */
 	@Bean
 	public MongoCustomConversions mongoCustomConversions() {
-		return new MongoCustomConversions(Collections.emptyList());
+		return MongoCustomConversions.create(adapter -> adapter.useNativeDriverJavaTimeCodecs(true));
 	}
 
 	@Bean
