@@ -175,6 +175,31 @@ public class FirebaseAuthenticator extends AbstractAuthenticator {
 		return this.doAuthenticate(provider, partner, idToken);
 	}
 
+	/**
+	 * Creates or loads a Firebase user by E.164 phone and returns a custom token
+	 * for client sign-in (e.g. TQ Plot after WhatsApp dialer verification).
+	 */
+	public String createCustomTokenForPhone(String phone, String displayName) {
+		try {
+			String e164 = phone.startsWith("+") ? phone : "+" + phone.replaceAll("[^\\d]", "");
+			FirebaseAuth auth = getInstance();
+			UserRecord user;
+			try {
+				user = auth.getUserByPhoneNumber(e164);
+			} catch (FirebaseAuthException notFound) {
+				UserRecord.CreateRequest request = new UserRecord.CreateRequest().setPhoneNumber(e164);
+				if (ArgUtil.is(displayName)) {
+					request.setDisplayName(displayName);
+				}
+				user = auth.createUser(request);
+			}
+			return auth.createCustomToken(user.getUid());
+		} catch (Exception e) {
+			LOGGER.warn("Unable to mint Firebase custom token for phone login: {}", e.getMessage());
+			return null;
+		}
+	}
+
 	public FirebaseOptions getFirebaseOptions() {
 		return firebaseOptions;
 	}
