@@ -11,7 +11,7 @@ public enum FileFormat implements EnumType {
 	PDF("application/pdf", FileType.DOCUMENT, "pdf"), CSV("text/csv", FileType.DOCUMENT, "csv"),
 
 	PNG("image/png", FileType.IMAGE, "png"), JPEG("image/jpeg", FileType.IMAGE, "jpeg"),
-	JPG("image/jpg", FileType.IMAGE, "jpg"), BMP("image/bmp", FileType.IMAGE, "bmp"),
+	JPG("image/jpeg", FileType.IMAGE, "jpg"), BMP("image/bmp", FileType.IMAGE, "bmp"),
 	GIF("image/gif", FileType.IMAGE, "gif"), TIFF("image/tiff", FileType.IMAGE, "tiff"),
 	TIF("image/tif", FileType.IMAGE, "tif"),
 
@@ -44,6 +44,9 @@ public enum FileFormat implements EnumType {
 			}
 			// application/vnd.openxmlformats-officedocument.wordprocessingml.document
 		}
+		// Browsers and WhatsApp use image/jpeg; image/jpg is not a valid MIME type.
+		TYPEMAP.put("image/jpg", JPEG);
+		TYPEMAP.put("jpg", JPEG);
 	}
 
 	String contentType;
