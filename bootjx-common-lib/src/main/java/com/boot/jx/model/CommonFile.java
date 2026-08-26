@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,6 +60,7 @@ public class CommonFile extends CommonFileAbstract<CommonFile> implements Multip
 		return body != null ? body.length : 0;
 	}
 
+	@JsonIgnore
 	@Override
 	public byte[] getBytes() throws IOException {
 		if (body != null) {
@@ -72,6 +74,7 @@ public class CommonFile extends CommonFileAbstract<CommonFile> implements Multip
 		return new byte[0];
 	}
 
+	@JsonIgnore
 	@Override
 	public InputStream getInputStream() throws IOException {
 		if (tempPath != null) {
@@ -85,6 +88,7 @@ public class CommonFile extends CommonFileAbstract<CommonFile> implements Multip
 		throw new FileNotFoundException("No backing file available");
 	}
 
+	@JsonIgnore
 	@Override
 	public void transferTo(File dest) throws IOException {
 
@@ -99,6 +103,12 @@ public class CommonFile extends CommonFileAbstract<CommonFile> implements Multip
 		}
 
 		throw new FileNotFoundException("No backing file available");
+	}
+
+	@JsonIgnore
+	@Override
+	public Resource getResource() {
+		return MultipartFile.super.getResource();
 	}
 
 }
