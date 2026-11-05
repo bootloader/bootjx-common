@@ -223,6 +223,9 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	protected ResponseEntity<AmxApiError> handle(HttpMessageNotReadableException ex, HttpServletRequest request,
 			HttpServletResponse response) {
+		// VAPT-26: keep full parse detail in logs; do not echo Java/Jackson class names to client
+		alert(ex);
+		
 		List<ApiFieldError> errors = new ArrayList<ApiFieldError>();
 
 		// newError.setField(ex.getName());
@@ -241,13 +244,16 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 				}
 			}
 
-			newError.setField(sb.toString());
-			newError.setObzect(x1.getPathReference());
-			newError.setDescription(HttpUtils.sanitze(x1.getOriginalMessage()));
+			String fieldPath = sb.toString();
+			newError.setField(fieldPath);
+			// Include field in description so clients that only show description stay clear (no class names)
+			newError.setDescription(ArgUtil.is(fieldPath)
+					? ("Invalid value for field: " + fieldPath)
+					: "Invalid value for field");
 			errors.add(newError);
 		} else {
 			ApiFieldError newError = new ApiFieldError();
-			newError.setDescription(HttpUtils.sanitze(ex.getMessage()));
+			newError.setDescription("Invalid request body");
 			errors.add(newError);
 		}
 
