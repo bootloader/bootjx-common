@@ -39,6 +39,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
+import com.boot.json.JsonViews;
 import com.boot.json.MapModelDeserializer.MapModelEditor;
 import com.boot.json.NamedEntityDeserializer.NamedEntityEditor;
 import com.boot.json.NamedEntityDeserializer.NamedMapModel;
@@ -60,6 +61,7 @@ import com.boot.jx.logger.events.ApiAuditEvent;
 import com.boot.model.MapModel;
 import com.boot.utils.ArgUtil;
 import com.boot.utils.HttpUtils;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
@@ -81,6 +83,7 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 
 	@ExceptionHandler(AmxApiException.class)
 	@ResponseBody
+	@JsonView(JsonViews.Public.class)
 	public ResponseEntity<AmxApiError> handle(AmxApiException ex, HttpServletRequest request,
 			HttpServletResponse response) {
 		AmxApiError apiError = ex.createAmxApiError();
@@ -94,7 +97,8 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 		ApiAuditEvent apiAuditEvent = new ApiAuditEvent(ex);
 		alert(ex, apiAuditEvent);
 
-		response.setHeader(AppConstants.EXCEPTION_HEADER_KEY, apiError.getException());
+		// VAPT Sr.24: never put Java FQCN in x-exception; clients use statusKey/message
+		response.setHeader(AppConstants.EXCEPTION_HEADER_KEY, AppConstants.EXCEPTION_HEADER_VALUE);
 		response.setHeader(AppConstants.EXCEPTION_HEADER_CODE_KEY, apiAuditEvent.getErrorCode());
 
 		if (!ArgUtil.is(apiError.getPagination()) && ArgUtil.is(ApiResponseUtil.pagination())) {
@@ -151,7 +155,8 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 		apiError.setErrors(errors);
 		apiError.setException(ApiHttpArgException.class.getName());
 		ExceptionMessageKey.resolveLocalMessage(apiError);
-		response.setHeader(AppConstants.EXCEPTION_HEADER_KEY, apiError.getException());
+		// VAPT Sr.24: sanitize header; FQCN remains Internal-only via JsonView
+		response.setHeader(AppConstants.EXCEPTION_HEADER_KEY, AppConstants.EXCEPTION_HEADER_VALUE);
 
 		if (!ArgUtil.is(apiError.getPagination()) && ArgUtil.is(ApiResponseUtil.pagination())) {
 			apiError.setPagination(ApiResponseUtil.pagination());
@@ -176,6 +181,7 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	@ResponseBody
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@JsonView(JsonViews.Public.class)
 	protected ResponseEntity<AmxApiError> handle(MethodArgumentNotValidException ex, HttpServletRequest request,
 			HttpServletResponse response) {
 
@@ -200,6 +206,7 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 	@ExceptionHandler(ApiHttpArgException.class)
 	@ResponseBody
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@JsonView(JsonViews.Public.class)
 	protected ResponseEntity<AmxApiError> handle(ApiHttpArgException ex, HttpServletRequest request,
 			HttpServletResponse response) {
 		List<ApiFieldError> errors = ApiResponseUtil.getErrors();
@@ -221,6 +228,7 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	@ResponseBody
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@JsonView(JsonViews.Public.class)
 	protected ResponseEntity<AmxApiError> handle(HttpMessageNotReadableException ex, HttpServletRequest request,
 			HttpServletResponse response) {
 		// VAPT-26: keep full parse detail in logs; do not echo Java/Jackson class names to client
@@ -271,6 +279,7 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	@ResponseBody
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@JsonView(JsonViews.Public.class)
 	protected ResponseEntity<AmxApiError> handle(MethodArgumentTypeMismatchException ex, HttpServletRequest request,
 			HttpServletResponse response) {
 		List<ApiFieldError> errors = new ArrayList<ApiFieldError>();
@@ -290,6 +299,7 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 	@ExceptionHandler(ConstraintViolationException.class)
 	@ResponseBody
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@JsonView(JsonViews.Public.class)
 	public ResponseEntity<AmxApiError> handle(ConstraintViolationException exception, HttpServletRequest request,
 			HttpServletResponse response) {
 		List<ApiFieldError> errors = new ArrayList<ApiFieldError>();
@@ -304,6 +314,7 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 
 	@ExceptionHandler(ApiHttpException.class)
 	@ResponseBody
+	@JsonView(JsonViews.Public.class)
 	protected ResponseEntity<AmxApiError> handle(ApiHttpException ex, HttpServletRequest request,
 			HttpServletResponse response) {
 		List<ApiFieldError> errors = ApiResponseUtil.getErrors();
@@ -315,7 +326,8 @@ public abstract class AmxAdvice implements ResponseBodyAdvice<ApiResponse<?, ?>>
 		apiError.setErrors(errors);
 		apiError.setException(ApiHttpArgException.class.getName());
 		ExceptionMessageKey.resolveLocalMessage(apiError);
-		response.setHeader(AppConstants.EXCEPTION_HEADER_KEY, apiError.getException());
+		// VAPT Sr.24: sanitize header; FQCN remains Internal-only via JsonView
+		response.setHeader(AppConstants.EXCEPTION_HEADER_KEY, AppConstants.EXCEPTION_HEADER_VALUE);
 
 		if (!ArgUtil.is(apiError.getPagination()) && ArgUtil.is(ApiResponseUtil.pagination())) {
 			apiError.setPagination(ApiResponseUtil.pagination());

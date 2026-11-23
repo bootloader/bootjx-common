@@ -66,6 +66,8 @@ public class AppConstants extends Constants {
 	public static final String REQUESTD_PARAMS_XKEY = "x-app-authd-params";
 
 	public static final String EXCEPTION_HEADER_KEY = "x-exception";
+	/** Client-safe presence marker for x-exception (never a Java FQCN). */
+	public static final String EXCEPTION_HEADER_VALUE = "API_ERROR";
 	public static final String EXCEPTION_HEADER_CODE_KEY = "x-exception-code";
 	public static final String EXCEPTION_LOGS_XKEY = "x-exception-logs";
 	public static final String ERROR_HEADER_KEY = "apiErrorJson";

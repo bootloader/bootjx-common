@@ -11,8 +11,10 @@ import com.boot.jx.api.AmxResponseSchemes.ApiMetaDetailsResponse;
 import com.boot.jx.exception.ApiHttpExceptions.ApiStatusCodes;
 import com.boot.jx.exception.IExceptionEnum;
 import com.boot.jx.swagger.ApiMockModelProperty;
+import com.boot.json.JsonViews;
 import com.boot.utils.ArgUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 
 public abstract class AResponse<M> implements ApiMetaDetailsResponse<M> {
 
@@ -178,10 +180,12 @@ public abstract class AResponse<M> implements ApiMetaDetailsResponse<M> {
 	}
 
 	/**
-	 * Get Exception class of error (Spring Norms)
-	 * 
+	 * Get Exception class of error (Spring Norms).
+	 * Internal-only: FQCN must not appear on Public API error JSON (VAPT Sr.24).
+	 *
 	 * @return
 	 */
+	@JsonView(JsonViews.Internal.class)
 	public String getException() {
 		return exception;
 	}
